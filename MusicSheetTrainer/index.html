@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="http://ocanvas.org/source/ocanvas-2.8.4.min.js"></script>
+    <script src="MusicSheet.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <style>
+        .keyboard {
+            border: 3px solid #BBBBBB;
+            margin: 15px;
+            padding: 15px;
+            display: inline;
+        }
+        .keyboard:hover {
+            background-color: #BBBBBB;
+        }
+    </style>
+</head>
+<body>
+    <div id="test">
+        <canvas id="canvas" width="800" height="500"></canvas>
+        <br />
+        <div id="0" class="keyboard">[1] Dó</div>
+        <div id="1" class="keyboard">[2] Ré</div>
+        <div id="2" class="keyboard">[3] Mi</div>
+        <div id="3" class="keyboard">[4] Fá</div>
+        <div id="4" class="keyboard">[5] Sol</div>
+        <div id="5" class="keyboard">[6] Lá</div>
+        <div id="6" class="keyboard">[7] Si</div>
+    </div>
+    <div id="result" style="display: none">
+        <h1>Resultado</h1>
+        Acertos: <span id="result_correct"></span>
+        <br />
+        Erros: <span id="result_error"></span>
+        <br />
+        Tempo: <span id="result_time"></span>
+        <br />
+        <input type="button" id="result_again" />
+    </div>
+    <script>
+        var currentTest = 0;
+        var tests = new Array();
+        tests.push(new Array(0, 1, 2, 3, 4, 5, 6, 7));
+        tests.push(new Array(1, 2, 5, 6, 10));
+        tests.push(new Array(0, 4, 6));
+        tests.push(new Array(0, 2, 4, 6));
+
+
+        var sheet = MS$(700);
+        sheet.onFinish(function (result) {
+            $("#test").hide();
+            $("#result").show();
+
+            $("#result_correct").text(result.correct);
+            $("#result_error").text(result.error);
+            $("#result_time").text(result.timeTaken);
+
+            if (100 * result.correct / result.total > 50) {
+                $("#result_again").val("Next");
+                currentTest++;
+            }
+            else {
+                $("#result_again").val("Try again");
+            }
+        });
+
+        sheet.createTest(tests[currentTest]);
+
+        $(".keyboard").click(function () {
+            var note = $(this).attr("id");
+            checkNote(note);
+        });
+
+        $("#result_again").click(function () {
+            $("#test").show();
+            $("#result").hide();
+            sheet.createTest(tests[currentTest]);
+        });
+
+        $(document).keydown(function (e) {
+            if (e.which >= 97 && e.which <= 103) {
+                var note = e.which - 97;
+                checkNote(note);                
+            }
+        });
+        
+        function checkNote(note) {
+            sheet.checkNote(note);
+            $('#' + note).effect("highlight", {}, 300);
+        }
+    </script>
+</body>
+</html>
