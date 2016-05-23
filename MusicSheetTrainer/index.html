@@ -64,6 +64,13 @@
             else {
                 $("#result_again").val("Try again");
             }
+
+            if (currentTest < tests.length) {
+                $("#result_again").focus();
+            }
+            else {
+                $("#result_again").hide();
+            }
         };
 
         var sheet = MS$({
@@ -82,6 +89,9 @@
             $("#test").show();
             $("#result").hide();
             
+            if (currentTest < tests.length) {
+
+            }
             createTest(tests[currentTest]);
         });
 
