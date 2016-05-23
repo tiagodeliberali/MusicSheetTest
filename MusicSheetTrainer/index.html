@@ -49,9 +49,7 @@
         tests.push(new Array(0, 4, 6));
         tests.push(new Array(0, 2, 4, 6));
 
-
-        var sheet = MS$(700);
-        sheet.onFinish(function (result) {
+        var onFinishFunction = function (result) {
             $("#test").hide();
             $("#result").show();
 
@@ -59,16 +57,21 @@
             $("#result_error").text(result.error);
             $("#result_time").text(result.timeTaken);
 
-            if (100 * result.correct / result.total > 50) {
+            if (result.passed) {
                 $("#result_again").val("Next");
                 currentTest++;
             }
             else {
                 $("#result_again").val("Try again");
             }
+        };
+
+        var sheet = MS$({
+            sheetWidth: 700,
+            onFinish: onFinishFunction
         });
 
-        sheet.createTest(tests[currentTest]);
+        createTest(tests[currentTest]);
 
         $(".keyboard").click(function () {
             var note = $(this).attr("id");
@@ -78,7 +81,8 @@
         $("#result_again").click(function () {
             $("#test").show();
             $("#result").hide();
-            sheet.createTest(tests[currentTest]);
+            
+            createTest(tests[currentTest]);
         });
 
         $(document).keydown(function (e) {
@@ -91,6 +95,16 @@
         function checkNote(note) {
             sheet.checkNote(note);
             $('#' + note).effect("highlight", {}, 300);
+        }
+
+        function createTest(notes) {
+            var testInformation = {
+                notes: notes,
+                passRate: 70,
+                passTime: 0
+            };
+
+            sheet.createTest(testInformation);
         }
     </script>
 </body>
