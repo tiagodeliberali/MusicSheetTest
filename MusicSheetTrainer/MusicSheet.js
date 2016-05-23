@@ -10,11 +10,7 @@
         onFinish: function (results) { },
     };
 
-    var testInformation = {
-        notes: new Array(),
-        passRate: 100,
-        passTime: 0
-    };
+    var testInformation = {};
 
     // 'new' an object
     var MusicSheet = function (userOptions, userSheetStyle) {
@@ -23,23 +19,31 @@
 
     MusicSheet.prototype = {
         createTest: function (userTestInformation) {
-            this.clear();
+            var self = this;
 
-            this.sheet.copyAttributes(testInformation, userTestInformation);
+            self.clear();
+
+            self.sheet.copyAttributes(testInformation, userTestInformation);
 
             for (var i in testInformation.notes) {
-                this.createNote(testInformation.notes[i]);
+                (function (position) {
+                    setTimeout(
+                        function () { self.createNote(testInformation.notes[position], testInformation.timeToKillNote); },
+                        i * testInformation.timeBetweenNotes);
+                }(i));
             }
 
             testInformation.startTime = Date.now();
         },
 
-        createNote: function (note) {
+        createNote: function (note, timeToKill) {
             var position = noteElements.length;
+            var x = timeToKill > 0 ? options.sheetWidth : this.getNodeCenterX(position);
 
             var element = this.sheet.drawNote(
-                options.noteSize, 
-                this.getNodeCenterX(position),
+                options.noteSize,
+                timeToKill,
+                x,
                 this.getNodeCenterY(note));
 
             noteElements[position] = {
@@ -50,23 +54,24 @@
             // draw lines above the sheet
             if (note > 11) {
                 for (var i = 12; i <= note; i++) {
-                    this.createSplitLine(i, position);
+                    this.createSplitLine(i, x, timeToKill);
                 }
             }
 
             // draw lines bellow the sheet
             if (note < 1) {
                 for (var i = 0; i >= note; i--) {
-                    this.createSplitLine(i, position);
+                    this.createSplitLine(i, x, timeToKill);
                 }
             }
         },
 
-        createSplitLine: function (note, position) {
+        createSplitLine: function (note, position, timeToKill) {
             if (note % 2 === 0) {
                 this.sheet.drawSplitLine(
                     options.noteSize,
-                    this.getNodeCenterX(position),
+                    timeToKill,
+                    position,
                     this.getNodeCenterY(note));
             }
         },
@@ -78,7 +83,9 @@
             testInformation = {
                 notes: new Array(),
                 passRate: 100,
-                passTime: 0
+                passTime: 0,
+                timeBetweenNotes: 1000,
+                timeToKillNote: 3000
             };
 
             this.sheet.reset();
@@ -107,7 +114,7 @@
                 this.sheet.setNoteAsWrong(noteElements[currentValidation].element);
             }
 
-            if (testResults.length == noteElements.length) {
+            if (testResults.length == testInformation.notes.length) {
                 this.finishTest();
             }
         },
@@ -172,6 +179,9 @@
 
         var sheetStyle = {
             canvasName: "#canvas",
+            fps: 60,
+            startScreenPosition: 10,
+            killPosition: 100,
             noteStroke: "5px #555555",
             noteStrokeCorrect: "5px #00b926",
             noteStrokeWrong: "5px #ff0000",
@@ -185,7 +195,9 @@
         }
 
         SheetDesigner.prototype = {
-            drawNote: function (size, x, y) {
+            drawNote: function (size, timeToKill, x, y) {
+                var self = this;
+
                 var element = this.canvas.display.ellipse({
                     x: x,
                     y: y,
@@ -196,10 +208,23 @@
 
                 this.canvas.addChild(element);
 
+                if (timeToKill || 0 > 0) {
+                    element.animate({
+                        x: sheetStyle.killPosition,
+                        y: y,
+                    }, {
+                        duration: timeToKill,
+                        easing: "linear",
+                        callback: function () {
+                            self.setNoteAsWrong(this);
+                        }
+                    });
+                }
+
                 return element;
             },
 
-            drawSplitLine: function (size, x, y) {
+            drawSplitLine: function (size, timeToKill, x, y) {
                 var element = this.canvas.display.line({
                     start: { x: x - size, y: y },
                     end: { x: x + size, y: y },
@@ -209,12 +234,22 @@
 
                 this.canvas.addChild(element);
 
+                if (timeToKill || 0 > 0) {
+                    element.animate({
+                        x: sheetStyle.killPosition,
+                        y: y,
+                    }, {
+                        duration: timeToKill,
+                        easing: "linear",
+                    });
+                }
+
                 return element;
             },
 
             drawLine: function (width, y) {
                 var element = this.canvas.display.line({
-                    start: { x: 0, y: y },
+                    start: { x: sheetStyle.startScreenPosition, y: y },
                     end: { x: width, y: y },
                     stroke: sheetStyle.lineStroke,
                     cap: sheetStyle.lineCap

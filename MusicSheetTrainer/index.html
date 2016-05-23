@@ -73,7 +73,7 @@
             }
         };
 
-        var sheet = MS$({
+        var trainner = MS$({
             sheetWidth: 700,
             onFinish: onFinishFunction
         });
@@ -89,9 +89,6 @@
             $("#test").show();
             $("#result").hide();
             
-            if (currentTest < tests.length) {
-
-            }
             createTest(tests[currentTest]);
         });
 
@@ -103,18 +100,20 @@
         });
         
         function checkNote(note) {
-            sheet.checkNote(note);
+            trainner.checkNote(note);
             $('#' + note).effect("highlight", {}, 300);
         }
 
         function createTest(notes) {
             var testInformation = {
                 notes: notes,
-                passRate: 70,
-                passTime: 0
+                passRate: 100,
+                passTime: 0,
+                timeBetweenNotes: 2000,
+                timeToKillNote: 3000
             };
 
-            sheet.createTest(testInformation);
+            trainner.createTest(testInformation);
         }
     </script>
 </body>
