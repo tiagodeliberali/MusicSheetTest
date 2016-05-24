@@ -26,6 +26,9 @@
         <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
         </fb:login-button>
     </div>
+    <div id="pre_test" style="display: none">
+        <input id="start_test" type="button" value="Iniciar!" />
+    </div>
     <div id="test" style="display: none">
         <canvas id="canvas" width="800" height="500"></canvas>
         <br />
@@ -59,8 +62,7 @@
                 document.getElementById('status').innerHTML = 'Você precisa logar no aplicativo para poder usá-lo.';
             }
             else {
-                // The person is not logged into Facebook, so we're not sure if
-                // they are logged into this app or not.
+                // The person is not logged into Facebook, so we're not sure if they are logged into this app or not.
                 document.getElementById('status').innerHTML = 'Primeiro, vamos logar no Facebook.';
             }
         }
@@ -101,19 +103,6 @@
         tests.push(new Array(0, 4, 6));
         tests.push(new Array(0, 2, 4, 6));
 
-        function startMusicSheetTrainer() {
-            $("#login").hide();
-            $("#test").show();
-
-            createTest(tests[currentTest]);
-
-            FB.api('/me', function (response) {
-                console.log(response);
-
-                document.getElementById('status').innerHTML = response.name;
-            });
-        }
-
         var onFinishFunction = function (result) {
             $("#test").hide();
             $("#result").show();
@@ -148,6 +137,13 @@
             checkNote(note);
         });
 
+        $("#start_test").click(function () {
+            $("#pre_test").hide();
+            $("#test").show();
+
+            createTest(tests[currentTest]);
+        });
+
         $("#result_again").click(function () {
             $("#test").show();
             $("#result").hide();
@@ -161,6 +157,17 @@
                 checkNote(note);                
             }
         });
+
+        function startMusicSheetTrainer() {
+            $("#login").hide();
+            $("#pre_test").show();
+
+            FB.api('/me', function (response) {
+                console.log(response);
+
+                document.getElementById('status').innerHTML = response.name;
+            });
+        }
         
         function checkNote(note) {
             trainner.checkNote(note);
