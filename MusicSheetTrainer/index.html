@@ -20,7 +20,13 @@
     </style>
 </head>
 <body>
-    <div id="test">
+    <div id="status">
+    </div>
+    <div id="login">
+        <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+        </fb:login-button>
+    </div>
+    <div id="test" style="display: none">
         <canvas id="canvas" width="800" height="500"></canvas>
         <br />
         <div id="0" class="keyboard">[1] Dó</div>
@@ -42,12 +48,71 @@
         <input type="button" id="result_again" />
     </div>
     <script>
+        // FACEBOOK API
+        function statusChangeCallback(response) {
+            if (response.status === 'connected') {
+                // Logged into your app and Facebook.
+                startMusicSheetTrainer();
+            }
+            else if (response.status === 'not_authorized') {
+                // The person is logged into Facebook, but not your app.
+                document.getElementById('status').innerHTML = 'Você precisa logar no aplicativo para poder usá-lo.';
+            }
+            else {
+                // The person is not logged into Facebook, so we're not sure if
+                // they are logged into this app or not.
+                document.getElementById('status').innerHTML = 'Primeiro, vamos logar no Facebook.';
+            }
+        }
+
+        function checkLoginState() {
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+            });
+        }
+
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId      : '230685073991478',
+                cookie     : true,  // enable cookies to allow the server to access the session
+                xfbml      : true,  // parse social plugins on this page
+                version    : 'v2.6' // use version 2.2?
+            });
+
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response);
+            });
+
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        // MUSIC SHEET TRAINNER USAGE
         var currentTest = 0;
         var tests = new Array();
         tests.push(new Array(0, 1, 2, 3, 4, 5, 6, 7));
         tests.push(new Array(1, 2, 5, 6, 10));
         tests.push(new Array(0, 4, 6));
         tests.push(new Array(0, 2, 4, 6));
+
+        function startMusicSheetTrainer() {
+            $("#login").hide();
+            $("#test").show();
+
+            createTest(tests[currentTest]);
+
+            FB.api('/me', function (response) {
+                console.log(response);
+
+                document.getElementById('status').innerHTML = response.name;
+            });
+        }
 
         var onFinishFunction = function (result) {
             $("#test").hide();
@@ -77,8 +142,6 @@
             sheetWidth: 700,
             onFinish: onFinishFunction
         });
-
-        createTest(tests[currentTest]);
 
         $(".keyboard").click(function () {
             var note = $(this).attr("id");
