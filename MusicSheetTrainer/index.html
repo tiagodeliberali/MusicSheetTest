@@ -1,11 +1,15 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="trainerApp">
 <head>
     <title></title>
     <script src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
     <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-    <script src="http://ocanvas.org/source/ocanvas-2.8.4.min.js"></script>
+    <script src="//ocanvas.org/source/ocanvas-2.8.4.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+    <script src="//pc035860.github.io/angular-easyfb/angular-easyfb.min.js"></script>
+    <script src="//cdn.backand.net/backand/dist/1.8.2/backand.min.js"></script>
     <script src="MusicSheet.js"></script>
+    <script src="trainerApp.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <style>
         .keyboard {
@@ -14,177 +18,49 @@
             padding: 15px;
             display: inline;
         }
-        .keyboard:hover {
-            background-color: #BBBBBB;
-        }
+
+            .keyboard:hover {
+                background-color: #BBBBBB;
+            }
     </style>
 </head>
 <body>
-    <div id="status">
+    <div ng-controller="mainController">
+        <div id="login">
+            <div>
+                <button class="btn btn-primary" ng-click="login()" ng-disabled="loginStatus.status == 'connected'">Conectar ao Facebook</button>
+                &nbsp;
+                <button class="btn btn-danger" ng-click="logout()" ng-disabled="!loginStatus || loginStatus.status != 'connected'">Sair</button>
+                &nbsp;
+                <button class="btn btn-success" ng-click="share()">Compartilhar</button>
+            </div>
+        </div>
+        <div id="pre_test" ng-show="isCurrentStep('pre_test')">
+            <br /><br />
+            <button class="btn btn-primary" ng-click="startTest()">Iniciar!</button>
+        </div>
+        <div id="test" ng-show="isCurrentStep('test')">
+            <canvas id="canvas" width="800" height="500"></canvas>
+            <br />
+            <button class="keyboard" ng-click="checkNote('0')">[1] Dó</button>
+            <button class="keyboard" ng-click="checkNote('1')">[2] Ré</button>
+            <button class="keyboard" ng-click="checkNote('2')">[3] Mi</button>
+            <button class="keyboard" ng-click="checkNote('3')">[4] Fá</button>
+            <button class="keyboard" ng-click="checkNote('4')">[5] Sol</button>
+            <button class="keyboard" ng-click="checkNote('5')">[6] Lá</button>
+            <button class="keyboard" ng-click="checkNote('6')">[7] Si</button>
+        </div>
+        <div id="result" ng-show="isCurrentStep('result')">
+            <h1>Resultado</h1>
+            Acertos: <span>{{ testResult.correct }}</span>
+            <br />
+            Erros: <span>{{ testResult.error }}</span>
+            <br />
+            Tempo: <span>{{ testResult.timeTaken }}</span>
+            <br />
+            <button class="btn btn-primary" ng-click="startTest()" ng-hide="isLastTest">{{ testResultButtonValue }}</button>
+        </div>
     </div>
-    <div id="login">
-        <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
-        </fb:login-button>
-    </div>
-    <div id="pre_test" style="display: none">
-        <input id="start_test" type="button" value="Iniciar!" />
-    </div>
-    <div id="test" style="display: none">
-        <canvas id="canvas" width="800" height="500"></canvas>
-        <br />
-        <div id="0" class="keyboard">[1] Dó</div>
-        <div id="1" class="keyboard">[2] Ré</div>
-        <div id="2" class="keyboard">[3] Mi</div>
-        <div id="3" class="keyboard">[4] Fá</div>
-        <div id="4" class="keyboard">[5] Sol</div>
-        <div id="5" class="keyboard">[6] Lá</div>
-        <div id="6" class="keyboard">[7] Si</div>
-    </div>
-    <div id="result" style="display: none">
-        <h1>Resultado</h1>
-        Acertos: <span id="result_correct"></span>
-        <br />
-        Erros: <span id="result_error"></span>
-        <br />
-        Tempo: <span id="result_time"></span>
-        <br />
-        <input type="button" id="result_again" />
-    </div>
-    <script>
-        // FACEBOOK API
-        function statusChangeCallback(response) {
-            if (response.status === 'connected') {
-                // Logged into your app and Facebook.
-                startMusicSheetTrainer();
-            }
-            else if (response.status === 'not_authorized') {
-                // The person is logged into Facebook, but not your app.
-                document.getElementById('status').innerHTML = 'Você precisa logar no aplicativo para poder usá-lo.';
-            }
-            else {
-                // The person is not logged into Facebook, so we're not sure if they are logged into this app or not.
-                document.getElementById('status').innerHTML = 'Primeiro, vamos logar no Facebook.';
-            }
-        }
-
-        function checkLoginState() {
-            FB.getLoginStatus(function (response) {
-                statusChangeCallback(response);
-            });
-        }
-
-        window.fbAsyncInit = function() {
-            FB.init({
-                appId      : '230685073991478',
-                cookie     : true,  // enable cookies to allow the server to access the session
-                xfbml      : true,  // parse social plugins on this page
-                version    : 'v2.6' // use version 2.2?
-            });
-
-            FB.getLoginStatus(function (response) {
-                statusChangeCallback(response);
-            });
-
-        };
-
-        (function (d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) { return; }
-            js = d.createElement(s); js.id = id;
-            js.src = "//connect.facebook.net/en_US/sdk.js";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));
-
-        // MUSIC SHEET TRAINNER USAGE
-        var currentTest = 0;
-        var tests = new Array();
-        tests.push(new Array(0, 1, 2, 3, 4, 5, 6, 7));
-        tests.push(new Array(1, 2, 5, 6, 10));
-        tests.push(new Array(0, 4, 6));
-        tests.push(new Array(0, 2, 4, 6));
-
-        var onFinishFunction = function (result) {
-            $("#test").hide();
-            $("#result").show();
-
-            $("#result_correct").text(result.correct);
-            $("#result_error").text(result.error);
-            $("#result_time").text(result.timeTaken);
-
-            if (result.passed) {
-                $("#result_again").val("Next");
-                currentTest++;
-            }
-            else {
-                $("#result_again").val("Try again");
-            }
-
-            if (currentTest < tests.length) {
-                $("#result_again").focus();
-            }
-            else {
-                $("#result_again").hide();
-            }
-        };
-
-        var trainner = MS$({
-            sheetWidth: 700,
-            onFinish: onFinishFunction
-        });
-
-        $(".keyboard").click(function () {
-            var note = $(this).attr("id");
-            checkNote(note);
-        });
-
-        $("#start_test").click(function () {
-            $("#pre_test").hide();
-            $("#test").show();
-
-            createTest(tests[currentTest]);
-        });
-
-        $("#result_again").click(function () {
-            $("#test").show();
-            $("#result").hide();
-            
-            createTest(tests[currentTest]);
-        });
-
-        $(document).keydown(function (e) {
-            if (e.which >= 97 && e.which <= 103) {
-                var note = e.which - 97;
-                checkNote(note);                
-            }
-        });
-
-        function startMusicSheetTrainer() {
-            $("#login").hide();
-            $("#pre_test").show();
-
-            FB.api('/me', function (response) {
-                console.log(response);
-
-                document.getElementById('status').innerHTML = response.name;
-            });
-        }
-        
-        function checkNote(note) {
-            trainner.checkNote(note);
-            $('#' + note).effect("highlight", {}, 300);
-        }
-
-        function createTest(notes) {
-            var testInformation = {
-                notes: notes,
-                passRate: 100,
-                passTime: 0,
-                timeBetweenNotes: 2000,
-                timeToKillNote: 3000
-            };
-
-            trainner.createTest(testInformation);
-        }
-    </script>
 </body>
 </html>
+
