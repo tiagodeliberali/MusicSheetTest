@@ -160,13 +160,15 @@
         var self = this;
 
         userSheetOptions.onNoteIsKilled = function () {
-            self.checkNote(-1);
+            userOptions.scope.$apply(function () {
+                self.checkNote(-1);
+            });
         };
 
         self.sheet = SheetDesigner(userSheetOptions);
 
         self.sheet.copyAttributes(options, userOptions);
-        
+
         self.drawSheetLines();
     }
 

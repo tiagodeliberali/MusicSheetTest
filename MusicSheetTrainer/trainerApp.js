@@ -22,19 +22,18 @@
     $scope.currentStep = '';
 
     var onFinishFunction = function (result) {
-        $scope.$apply(function () {
-            $scope.currentStep = 'result'
-            $scope.testResult = result;
+        $scope.currentStep = 'result'
+        $scope.testResult = result;
 
-            if (result.passed) {
-                $scope.currentTest++;
-            }
+        if (result.passed) {
+            $scope.currentTest++;
+        }
 
-            $scope.isLastTest = $scope.currentTest >= tests.length;
-        });
+        $scope.isLastTest = $scope.currentTest >= tests.length;
     };
 
     var trainner = MS$({
+        scope: $scope,
         sheetWidth: 700,
         onFinish: onFinishFunction
     });
