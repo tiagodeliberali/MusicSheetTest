@@ -65,10 +65,10 @@
         ezfb.ui(
           {
               method: 'feed',
-              name: 'Aprenda a ler partitura com o Music Sheet Trainer',
+              name: 'Vamos treinar leitura de partitura?',
               picture: 'http://plnkr.co/img/plunker.png',
               link: 'http://musicsheettrainer.azurewebsites.net',
-              description: 'Aprenda a ler partitura de forma fácil e divertida!'
+              description: 'Exercite a leitura de partitura de forma fácil e divertida!'
           },
           function (res) {
               // res: FB.ui response
