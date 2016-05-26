@@ -108,7 +108,7 @@
                 return;
             }
 
-            if (noteElements[currentValidation].note % 7 == note) {
+            if ((7777 + noteElements[currentValidation].note) % 7 == note) {
                 testResults[currentValidation] = 1;
                 this.sheet.setNoteAsCorrect(noteElements[currentValidation].element);
             }
