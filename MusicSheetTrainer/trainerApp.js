@@ -22,14 +22,16 @@
     $scope.currentStep = '';
 
     var onFinishFunction = function (result) {
-        $scope.currentStep = 'result'
-        $scope.testResult = result;
+        $scope.$apply(function () {
+            $scope.currentStep = 'result'
+            $scope.testResult = result;
 
-        if (result.passed) {
-            $scope.currentTest++;
-        }
+            if (result.passed) {
+                $scope.currentTest++;
+            }
 
-        $scope.isLastTest = $scope.currentTest >= tests.length;
+            $scope.isLastTest = $scope.currentTest >= tests.length;
+        });
     };
 
     var trainner = MS$({
@@ -110,7 +112,7 @@
             notes: notes,
             passRate: 100,
             passTime: 0,
-            timeBetweenNotes: 2000,
+            timeBetweenNotes: 500,
             timeToKillNote: 3000
         };
 
