@@ -84,7 +84,7 @@
                 passRate: 100,
                 passTime: 0,
                 timeBetweenNotes: 1000,
-                timeToKillNote: 3000
+                timeToKillNote: 6000
             };
 
             this.sheet.reset();

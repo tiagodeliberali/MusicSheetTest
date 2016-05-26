@@ -84,6 +84,45 @@
         trainner.checkNote(note);
     }
 
+    $scope.keyPressed = function(key) {
+        switch (key.keyCode) {
+            case 49:
+            case 97:
+                trainner.checkNote(0);
+                break;
+
+            case 50:
+            case 98:
+                trainner.checkNote(1);
+                break;
+
+            case 51:
+            case 99:
+                trainner.checkNote(2);
+                break;
+
+            case 52:
+            case 100:
+                trainner.checkNote(3);
+                break;
+
+            case 53:
+            case 101:
+                trainner.checkNote(4);
+                break;
+
+            case 54:
+            case 102:
+                trainner.checkNote(5);
+                break;
+        
+            case 55:
+            case 103:
+                trainner.checkNote(6);
+                break;
+        }
+    }
+
     function updateLoginStatus(more) {
         ezfb.getLoginStatus(function (res) {
             $scope.loginStatus = res;
@@ -111,8 +150,8 @@
             notes: notes,
             passRate: 100,
             passTime: 0,
-            timeBetweenNotes: 500,
-            timeToKillNote: 3000
+            timeBetweenNotes: 1000,
+            timeToKillNote: 6000
         };
 
         trainner.createTest(testInformation);
