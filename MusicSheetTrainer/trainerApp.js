@@ -43,12 +43,12 @@
         onFinish: onFinishFunction
     });
 
-    updateLoginStatus(updateApiMe);
+    updateLoginStatus();
 
     $scope.login = function () {
         ezfb.login(function (res) {
             if (res.authResponse) {
-                updateLoginStatus(updateApiMe);
+                updateLoginStatus();
             }
         }, {
             scope: 'public_profile,email'
@@ -57,8 +57,9 @@
 
     $scope.logout = function () {
         ezfb.logout(function () {
-            updateLoginStatus(updateApiMe);
+            updateLoginStatus();
         });
+        trainner.clear();
     };
 
     $scope.share = function () {
@@ -128,31 +129,32 @@
         }
     }
 
-    function updateLoginStatus(more) {
+    function updateLoginStatus() {
         ezfb.getLoginStatus(function (res) {
             $scope.loginStatus = res;
 
             if (res.status === 'connected') {
                 $scope.currentStep = 'pre_test';
+
+                updateApiMe();
             }
             else {
                 $scope.currentStep = 'not_logged';
             }
-
-            (more || angular.noop)();
         });
     }
 
     function updateApiMe() {
         ezfb.api('/me', function (res) {
             $scope.apiMe = res;
+            console.log(res);
 
             getUser(res.id)
                 .then(function (getUserResult) {
                     if (getUserResult.data.length === 0) {
                         createUser($scope.apiMe.id, $scope.apiMe.name)
                             .then(function (createUserResult) {
-                                $scope.currentUser = createUserResult.data[0];
+                                $scope.currentUser = createUserResult.data;
                             }, function (result) {
                                 console.log(result);
                             });;
