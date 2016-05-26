@@ -17,6 +17,7 @@
 
 .controller('mainController', ['$scope', 'ezfb', 'Backand', '$http', function ($scope, ezfb, Backand, $http) {
     $scope.currentStep = '';
+    $scope.currentLevel = 0;
 
     var tests = new Array();
     tests.push(new Array(0, 1));
@@ -32,13 +33,19 @@
     tests.push(new Array(0, 4, 6));
     tests.push(new Array(0, 2, 4, 6));
 
+    $scope.allTests = angular.copy(tests);
+
     var onFinishFunction = function (result) {
         $scope.currentStep = 'result'
         $scope.testResult = result;
 
         if (result.passed) {
-            $scope.currentUser.currentLevel++;
-            updateUserLevel($scope.currentUser.id, $scope.currentUser.currentLevel);
+            $scope.currentLevel++;
+
+            if ($scope.currentLevel > $scope.currentUser.currentLevel) {
+                $scope.currentUser.currentLevel = $scope.currentLevel;
+                updateUserLevel($scope.currentUser.id, $scope.currentUser.currentLevel);
+            }
         }
 
         $scope.isLastTest = $scope.currentUser.currentLevel >= tests.length;
@@ -88,9 +95,14 @@
         return $scope.currentStep == step
     };
 
+    $scope.startChoosenTest = function(level) {
+        $scope.currentLevel = level;
+        $scope.startTest();
+    };
+
     $scope.startTest = function () {
         $scope.currentStep = 'test';
-        createTest(tests[$scope.currentUser.currentLevel]);
+        createTest(tests[$scope.currentLevel]);
     };
 
     $scope.checkNote = function (note) {
@@ -162,12 +174,14 @@
                         createUser($scope.apiMe.id, $scope.apiMe.name)
                             .then(function (createUserResult) {
                                 $scope.currentUser = createUserResult.data;
+                                $scope.currentLevel = $scope.currentUser.currentLevel;
                             }, function (result) {
                                 console.log(result);
                             });;
                     }
                     else {
                         $scope.currentUser = getUserResult.data[0];
+                        $scope.currentLevel = $scope.currentUser.currentLevel;
                     }
 
                 }, function (result) {
