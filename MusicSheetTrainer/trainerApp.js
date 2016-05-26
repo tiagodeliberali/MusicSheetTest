@@ -21,6 +21,13 @@
     var tests = new Array();
     tests.push(new Array(0, 1));
     tests.push(new Array(0, 1, 2, 3, 4, 5, 6, 7));
+    tests.push(new Array(5, 5, 9, 9, 9, 9, 5, 5, 5, 5, 9, 9, 9, 9, 5, 5));
+    tests.push(new Array(-3, -3, 1, 1, 1, 1, -3, -3, -3, -3, 1, 1, 1, 1, -3, -3));
+    tests.push(new Array(5, 5, 9, 9, 10, 10, 9, 9, 5, 5, 6, 6, 5, 5, 5));
+    tests.push(new Array(-3, -3, 1, 1, 2, 2, 1, 1, -3, -3, -2, 1, -3, -3, -3));
+    tests.push(new Array(9, 9, 10, 10, 11, 11, 9, 9, 10, 10, 11, 11, 9, 9, 9));
+    tests.push(new Array(5, 5, 6, 6, 7, 7, 5, 5, 6, 6, 7, 9, 5, 5, 5));
+    tests.push(new Array(1, 2, 3, 1, 2, 5, 1, 1, 1, 2, 3, 1, 2, 5, 1));
     tests.push(new Array(1, 2, 5, 6, 10));
     tests.push(new Array(0, 4, 6));
     tests.push(new Array(0, 2, 4, 6));
