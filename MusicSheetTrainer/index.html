@@ -30,7 +30,8 @@
         <div ng-show="isCurrentStep('pre_test')" class="jumbotron">
             <h1>Vamos começar?</h1>
             <p class="lead">Bem vindo, {{ apiMe.name }}!</p>
-            <p><a class="btn btn-lg btn-success" href="#" role="button" ng-click="startTest()">Iniciar!</a></p>
+            <p class="lead" ng-show="currentUser == undefined">Carregando informações...</p>
+            <p ng-show ="currentUser != undefined"><a class="btn btn-lg btn-success" href="#" role="button" ng-click="startTest()">Iniciar!</a></p>
         </div>
         <div ng-show="isCurrentStep('test')">
             <canvas id="canvas" width="800" height="300"></canvas>

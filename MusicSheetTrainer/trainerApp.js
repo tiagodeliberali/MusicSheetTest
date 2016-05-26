@@ -1,4 +1,4 @@
-﻿var trainerApp = angular.module('trainerApp', ['ezfb'])
+﻿var trainerApp = angular.module('trainerApp', ['ezfb', 'backand'])
 
 .config(function (ezfbProvider) {
     ezfbProvider.setLocale('pt_BR');
@@ -9,8 +9,14 @@
     });
 })
 
-.controller('mainController', ['$scope', 'ezfb', function ($scope, ezfb) {
-    $scope.currentTest = 0;
+.config(function (BackandProvider) {
+    BackandProvider.setAppName('musicsheettrainer');
+    BackandProvider.setSignUpToken('fd820533-b969-4877-a59b-f1f9c9d59850');
+    BackandProvider.setAnonymousToken('62e58aa7-6bf4-47a6-8177-ef6ff18aa69d');
+})
+
+.controller('mainController', ['$scope', 'ezfb', 'Backand', '$http', function ($scope, ezfb, Backand, $http) {
+    $scope.currentStep = '';
 
     var tests = new Array();
     tests.push(new Array(0, 1));
@@ -19,17 +25,16 @@
     tests.push(new Array(0, 4, 6));
     tests.push(new Array(0, 2, 4, 6));
 
-    $scope.currentStep = '';
-
     var onFinishFunction = function (result) {
         $scope.currentStep = 'result'
         $scope.testResult = result;
 
         if (result.passed) {
-            $scope.currentTest++;
+            $scope.currentUser.currentLevel++;
+            updateUserLevel($scope.currentUser.id, $scope.currentUser.currentLevel);
         }
 
-        $scope.isLastTest = $scope.currentTest >= tests.length;
+        $scope.isLastTest = $scope.currentUser.currentLevel >= tests.length;
     };
 
     var trainner = MS$({
@@ -77,14 +82,14 @@
 
     $scope.startTest = function () {
         $scope.currentStep = 'test';
-        createTest(tests[$scope.currentTest]);
+        createTest(tests[$scope.currentUser.currentLevel]);
     };
 
     $scope.checkNote = function (note) {
         trainner.checkNote(note);
     }
 
-    $scope.keyPressed = function(key) {
+    $scope.keyPressed = function (key) {
         switch (key.keyCode) {
             case 49:
             case 97:
@@ -115,7 +120,7 @@
             case 102:
                 trainner.checkNote(5);
                 break;
-        
+
             case 55:
             case 103:
                 trainner.checkNote(6);
@@ -141,7 +146,24 @@
     function updateApiMe() {
         ezfb.api('/me', function (res) {
             $scope.apiMe = res;
-            console.log(res);
+
+            getUser(res.id)
+                .then(function (getUserResult) {
+                    if (getUserResult.data.length === 0) {
+                        createUser($scope.apiMe.id, $scope.apiMe.name)
+                            .then(function (createUserResult) {
+                                $scope.currentUser = createUserResult.data[0];
+                            }, function (result) {
+                                console.log(result);
+                            });;
+                    }
+                    else {
+                        $scope.currentUser = getUserResult.data[0];
+                    }
+
+                }, function (result) {
+                    console.log(result);
+                });
         });
     }
 
@@ -155,5 +177,39 @@
         };
 
         trainner.createTest(testInformation);
+    }
+
+    function createUser(facebookId, name) {
+        return $http({
+            method: 'POST',
+            url: Backand.getApiUrl() + '/1/objects/users?returnObject=true',
+            data: {
+                facebook_id: facebookId,
+                name: name,
+                currentLevel: '0'
+            }
+        });
+    }
+
+    function getUser(facebookId) {
+        return $http({
+            method: 'GET',
+            url: Backand.getApiUrl() + '/1/query/data/current_user',
+            params: {
+                parameters: {
+                    facebook_id: facebookId
+                }
+            }
+        });
+    }
+
+    function updateUserLevel(userId, level) {
+        return $http({
+            method: 'PUT',
+            url: Backand.getApiUrl() + '/1/objects/users/' + userId + '?returnObject=true',
+            data: {
+                currentLevel: level
+            }
+        });
     }
 }]);
