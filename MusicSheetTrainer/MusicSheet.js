@@ -5,7 +5,7 @@
 
     var options = {
         noteSize: 30,
-        sheetStartPosition: 200, 
+        sheetStartPosition: 70, 
         sheetWidth: 900,
         onFinish: function (results) { },
     };
