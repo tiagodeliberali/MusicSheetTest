@@ -68,6 +68,7 @@
   <ItemGroup>
     <Content Include="index.html" />
     <Content Include="MusicSheet.js" />
+    <Content Include="Site.css" />
     <Content Include="trainerApp.js" />
     <Content Include="Web.config" />
   </ItemGroup>

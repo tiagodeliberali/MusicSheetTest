@@ -19,20 +19,14 @@
     tests.push(new Array(0, 4, 6));
     tests.push(new Array(0, 2, 4, 6));
 
-    $scope.currentStep = 'pre_test';
-
-    var _self = this;
+    $scope.currentStep = '';
 
     var onFinishFunction = function (result) {
         $scope.currentStep = 'result'
         $scope.testResult = result;
 
         if (result.passed) {
-            $scope.testResultButtonValue = "Próximo";
             $scope.currentTest++;
-        }
-        else {
-            $scope.testResultButtonValue = "Tentar novamente";
         }
 
         $scope.isLastTest = $scope.currentTest >= tests.length;
@@ -97,7 +91,7 @@
                 $scope.currentStep = 'pre_test';
             }
             else {
-                $scope.currentStep = '';
+                $scope.currentStep = 'not_logged';
             }
 
             (more || angular.noop)();
@@ -107,6 +101,7 @@
     function updateApiMe() {
         ezfb.api('/me', function (res) {
             $scope.apiMe = res;
+            console.log(res);
         });
     }
 
