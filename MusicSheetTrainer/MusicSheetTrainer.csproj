@@ -67,6 +67,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="GClef.png" />
     <Content Include="index.html" />
     <Content Include="MusicSheet.js" />
     <Content Include="Site.css" />

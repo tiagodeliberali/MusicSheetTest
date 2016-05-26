@@ -92,9 +92,13 @@
         },
 
         drawSheetLines: function () {
+            this.sheet.drawKillLine(options.sheetStartPosition - options.noteSize, options.noteSize * 7.5);
+
             for (var i = 0; i < 5; i++) {
                 this.sheet.drawLine(options.sheetWidth, options.noteSize * i + options.sheetStartPosition);
             }
+
+            this.sheet.drawClef('GClef.png');
         },
 
         checkNote: function (note) {
@@ -188,13 +192,14 @@
             canvasName: "#canvas",
             fps: 60,
             startScreenPosition: 10,
-            killPosition: 100,
+            killPosition: 150,
             onNoteIsKilled: function () { },
 
             noteStroke: "5px #555555",
             noteStrokeCorrect: "5px #00b926",
             noteStrokeWrong: "5px #ff0000",
             lineStroke: "5px #0aa",
+            killLineStroke: "5px #bbbbbb",
             lineCap: "round"
         }
 
@@ -271,6 +276,30 @@
                 this.canvas.addChild(element);
 
                 return element;
+            },
+
+            drawKillLine: function (start, end) {
+                var element = this.canvas.display.line({
+                    start: { x: sheetOptions.killPosition, y: start },
+                    end: { x: sheetOptions.killPosition, y: end },
+                    stroke: sheetOptions.killLineStroke,
+                    cap: sheetOptions.lineCap
+                });
+
+                this.canvas.addChild(element);
+
+                return element;
+            },
+
+            drawClef: function(clefName) {
+                var image = this.canvas.display.image({
+                    x: 177,
+                    y: 120,
+                    origin: { x: 150, y: 90 },
+                    image: clefName
+                });
+
+                this.canvas.addChild(image);
             },
 
             reset: function () {
