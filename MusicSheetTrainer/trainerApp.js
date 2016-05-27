@@ -74,6 +74,7 @@
             updateLoginStatus();
         });
         trainner.clear();
+        $scope.currentUser = undefined;
     };
 
     $scope.share = function () {
@@ -81,7 +82,7 @@
           {
               method: 'feed',
               name: 'Vamos treinar leitura de partitura?',
-              picture: 'http://plnkr.co/img/plunker.png',
+              picture: 'http://musicsheettrainer.azurewebsites.net/logo_squared.png',
               link: 'http://musicsheettrainer.azurewebsites.net',
               description: 'Exercite a leitura de partitura de forma fácil e divertida!'
           },

@@ -20,15 +20,15 @@
                     <li role="presentation"><a href="#" ng-click="logout()">Sair</a></li>
                 </ul>
             </nav>
-            <h3 class="text-muted">Music Sheet Trainer</h3>
+            <img src="logo.png" />
         </div>
         <div ng-show="isCurrentStep('not_logged')" class="jumbotron">
-            <h1>Quem é você?</h1>
-            <p class="lead">Bem vindo e esteja preparado para os desafios a seguir. Para começar, vamos nos identificar.</p>
-            <p><a class="btn btn-lg btn-primary" href="#" role="button" ng-click="login()">Conectar ao Facebook</a></p>
+            <h1>Vamos começar?</h1>
+            <p class="lead">Preparare-se para desafiar e aprimorar sua capacidade de ler partituras</p>
+            <p><a class="btn btn-lg btn-primary" href="#" role="button" ng-click="login()">Conecte-se com o Facebook</a></p>
         </div>
         <div ng-show="isCurrentStep('pre_test')" class="jumbotron">
-            <h1>Vamos começar?</h1>
+            <h1>Desafie-se!</h1>
             <p class="lead">Bem vindo, {{ apiMe.name }}!</p>
             <p class="lead" ng-show="currentUser == undefined">Carregando informações...</p>
             <p ng-show="currentUser != undefined"><a class="btn btn-lg btn-success" href="#" role="button" ng-click="startTest()">Iniciar!</a></p>
@@ -77,8 +77,8 @@
             </form>
             <button class="btn btn-primary" ng-click="startTest()" ng-hide="isLastTest">{{ (testResult.passed ? "Próximo desafio" : "Tentar novamente") }}</button>
         </div>
-        <div ng-show="isCurrentStep('pre_test') || isCurrentStep('result')">
-            <h3>Available tests</h3>
+        <div ng-show="currentUser != undefined && (isCurrentStep('pre_test') || isCurrentStep('result'))">
+            <h3>Desafios</h3>
             <div class="btn-group btn-group-justified" role="group" aria-label="Justified button group">
                 <div class="btn-group" role="group" ng-repeat="test in allTests">
                     <button type="button"

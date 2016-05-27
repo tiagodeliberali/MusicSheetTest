@@ -69,6 +69,8 @@
   <ItemGroup>
     <Content Include="GClef.png" />
     <Content Include="index.html" />
+    <Content Include="logo.png" />
+    <Content Include="logo_squared.png" />
     <Content Include="MusicSheet.js" />
     <Content Include="Site.css" />
     <Content Include="trainerApp.js" />
