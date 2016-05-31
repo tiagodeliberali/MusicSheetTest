@@ -15,7 +15,113 @@
     BackandProvider.setAnonymousToken('62e58aa7-6bf4-47a6-8177-ef6ff18aa69d');
 })
 
-.controller('mainController', ['$scope', 'ezfb', 'Backand', '$http', function ($scope, ezfb, Backand, $http) {
+.service('loginService', ['ezfb', '$q', function (ezfb, $q) {
+    this.login = function () {
+        var deferred = $q.defer();
+
+        ezfb.login(function (res) {
+            if (res.authResponse) {
+                updateLoginStatus(deferred.resolve);
+            }
+        }, {
+            scope: 'public_profile,email'
+        });
+
+        return deferred.promise;
+    };
+
+    this.logout = function () {
+        var deferred = $q.defer();
+
+        ezfb.logout(function () {
+            updateLoginStatus(deferred.resolve);
+        });
+
+        return deferred.promise;
+    };
+
+    this.loginStatus = function () {
+        var deferred = $q.defer();
+
+        updateLoginStatus(deferred.resolve);
+
+        return deferred.promise;
+    };
+
+    this.updateApiMe = function () {
+        var deferred = $q.defer();
+
+        ezfb.api('/me', function (res) {
+            deferred.resolve(res);
+        });
+
+        return deferred.promise;
+    };
+
+    this.share = function (name, link, description) {
+        var deferred = $q.defer();
+
+        ezfb.ui(
+          {
+              method: 'feed',
+              name: name,
+              picture: 'http://musicsheettrainer.azurewebsites.net/logo_squared.png',
+              link: link,
+              description: description
+          },
+          function (res) {
+              // res: FB.ui response
+              deferred.resolve(res);
+          }
+        );
+
+        return deferred.promise;
+    };
+
+    function updateLoginStatus(action) {
+        ezfb.getLoginStatus(function (res) {
+            action(res);
+        });
+    }
+}])
+
+.service('dataService', ['Backand', '$http', function (Backand, $http) {
+    this.createUser = function (facebookId, name) {
+        return $http({
+            method: 'POST',
+            url: Backand.getApiUrl() + '/1/objects/users?returnObject=true',
+            data: {
+                facebook_id: facebookId,
+                name: name,
+                currentLevel: '0'
+            }
+        });
+    }
+
+    this.getUser = function (facebookId) {
+        return $http({
+            method: 'GET',
+            url: Backand.getApiUrl() + '/1/query/data/current_user',
+            params: {
+                parameters: {
+                    facebook_id: facebookId
+                }
+            }
+        });
+    }
+
+    this.updateUserLevel = function (userId, level) {
+        return $http({
+            method: 'PUT',
+            url: Backand.getApiUrl() + '/1/objects/users/' + userId + '?returnObject=true',
+            data: {
+                currentLevel: level
+            }
+        });
+    }
+}])
+
+.controller('mainController', ['$scope', 'loginService', 'dataService', function ($scope, loginService, dataService) {
     $scope.currentStep = '';
     $scope.currentLevel = 0;
 
@@ -35,6 +141,68 @@
 
     $scope.allTests = angular.copy(tests);
 
+    loginService.loginStatus().then(function (res) {
+        updateLoginStatus(res);
+    });
+
+    $scope.login = function () {
+        loginService.login().then(function (res) {
+            updateLoginStatus(res);
+        });
+    };
+
+    $scope.logout = function () {
+        loginService.logout().then(function (res) {
+            updateLoginStatus(res);
+            trainner.clear();
+            $scope.currentUser = undefined;
+        });
+    };
+
+    function updateLoginStatus(res) {
+        $scope.loginStatus = res;
+
+        if (res.status === 'connected') {
+            $scope.currentStep = 'pre_test';
+
+            loginService.updateApiMe().then(function (res) {
+                $scope.apiMe = res;
+                getUserInformation(res)
+            });
+        }
+        else {
+            $scope.currentStep = 'not_logged';
+        }
+    }
+
+    function getUserInformation(res) {
+        dataService.getUser(res.id).then(function (getUserResult) {
+            if (getUserResult.data.length === 0) {
+                dataService.createUser($scope.apiMe.id, $scope.apiMe.name)
+                    .then(function (createUserResult) {
+                        $scope.currentUser = createUserResult.data;
+                        $scope.currentLevel = $scope.currentUser.currentLevel;
+                    }, function (result) {
+                        console.log(result);
+                    });;
+            }
+            else {
+                $scope.currentUser = getUserResult.data[0];
+                $scope.currentLevel = $scope.currentUser.currentLevel;
+            }
+
+        }, function (result) {
+            console.log(result);
+        });
+    }
+
+    $scope.share = function () {
+        loginService.share(
+            'Vamos treinar leitura de partitura?',
+            'http://musicsheettrainer.azurewebsites.net',
+            'Exercite a leitura de partitura de forma fácil e divertida!');
+    };
+
     var onFinishFunction = function (result) {
         $scope.currentStep = 'result'
         $scope.testResult = result;
@@ -44,7 +212,7 @@
 
             if ($scope.currentLevel > $scope.currentUser.currentLevel) {
                 $scope.currentUser.currentLevel = $scope.currentLevel;
-                updateUserLevel($scope.currentUser.id, $scope.currentUser.currentLevel);
+                dataService.updateUserLevel($scope.currentUser.id, $scope.currentUser.currentLevel);
             }
         }
 
@@ -57,46 +225,11 @@
         onFinish: onFinishFunction
     });
 
-    updateLoginStatus();
-
-    $scope.login = function () {
-        ezfb.login(function (res) {
-            if (res.authResponse) {
-                updateLoginStatus();
-            }
-        }, {
-            scope: 'public_profile,email'
-        });
-    };
-
-    $scope.logout = function () {
-        ezfb.logout(function () {
-            updateLoginStatus();
-        });
-        trainner.clear();
-        $scope.currentUser = undefined;
-    };
-
-    $scope.share = function () {
-        ezfb.ui(
-          {
-              method: 'feed',
-              name: 'Vamos treinar leitura de partitura?',
-              picture: 'http://musicsheettrainer.azurewebsites.net/logo_squared.png',
-              link: 'http://musicsheettrainer.azurewebsites.net',
-              description: 'Exercite a leitura de partitura de forma fácil e divertida!'
-          },
-          function (res) {
-              // res: FB.ui response
-          }
-        );
-    };
-
     $scope.isCurrentStep = function (step) {
         return $scope.currentStep == step
     };
 
-    $scope.startChoosenTest = function(level) {
+    $scope.startChoosenTest = function (level) {
         $scope.currentLevel = level;
         $scope.startTest();
     };
@@ -149,47 +282,9 @@
         }
     }
 
-    function updateLoginStatus() {
-        ezfb.getLoginStatus(function (res) {
-            $scope.loginStatus = res;
 
-            if (res.status === 'connected') {
-                $scope.currentStep = 'pre_test';
 
-                updateApiMe();
-            }
-            else {
-                $scope.currentStep = 'not_logged';
-            }
-        });
-    }
 
-    function updateApiMe() {
-        ezfb.api('/me', function (res) {
-            $scope.apiMe = res;
-            console.log(res);
-
-            getUser(res.id)
-                .then(function (getUserResult) {
-                    if (getUserResult.data.length === 0) {
-                        createUser($scope.apiMe.id, $scope.apiMe.name)
-                            .then(function (createUserResult) {
-                                $scope.currentUser = createUserResult.data;
-                                $scope.currentLevel = $scope.currentUser.currentLevel;
-                            }, function (result) {
-                                console.log(result);
-                            });;
-                    }
-                    else {
-                        $scope.currentUser = getUserResult.data[0];
-                        $scope.currentLevel = $scope.currentUser.currentLevel;
-                    }
-
-                }, function (result) {
-                    console.log(result);
-                });
-        });
-    }
 
     function createTest(notes) {
         var testInformation = {
@@ -201,39 +296,5 @@
         };
 
         trainner.createTest(testInformation);
-    }
-
-    function createUser(facebookId, name) {
-        return $http({
-            method: 'POST',
-            url: Backand.getApiUrl() + '/1/objects/users?returnObject=true',
-            data: {
-                facebook_id: facebookId,
-                name: name,
-                currentLevel: '0'
-            }
-        });
-    }
-
-    function getUser(facebookId) {
-        return $http({
-            method: 'GET',
-            url: Backand.getApiUrl() + '/1/query/data/current_user',
-            params: {
-                parameters: {
-                    facebook_id: facebookId
-                }
-            }
-        });
-    }
-
-    function updateUserLevel(userId, level) {
-        return $http({
-            method: 'PUT',
-            url: Backand.getApiUrl() + '/1/objects/users/' + userId + '?returnObject=true',
-            data: {
-                currentLevel: level
-            }
-        });
     }
 }]);
