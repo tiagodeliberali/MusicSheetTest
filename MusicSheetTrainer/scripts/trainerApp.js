@@ -126,18 +126,69 @@
     $scope.currentLevel = 0;
 
     var tests = new Array();
-    tests.push(new Array(0, 1));
-    tests.push(new Array(0, 1, 2, 3, 4, 5, 6, 7));
-    tests.push(new Array(5, 5, 9, 9, 9, 9, 5, 5, 5, 5, 9, 9, 9, 9, 5, 5));
-    tests.push(new Array(-3, -3, 1, 1, 1, 1, -3, -3, -3, -3, 1, 1, 1, 1, -3, -3));
-    tests.push(new Array(5, 5, 9, 9, 10, 10, 9, 9, 5, 5, 6, 6, 5, 5, 5));
-    tests.push(new Array(-3, -3, 1, 1, 2, 2, 1, 1, -3, -3, -2, 1, -3, -3, -3));
-    tests.push(new Array(9, 9, 10, 10, 11, 11, 9, 9, 10, 10, 11, 11, 9, 9, 9));
-    tests.push(new Array(5, 5, 6, 6, 7, 7, 5, 5, 6, 6, 7, 9, 5, 5, 5));
-    tests.push(new Array(1, 2, 3, 1, 2, 5, 1, 1, 1, 2, 3, 1, 2, 5, 1));
-    tests.push(new Array(1, 2, 5, 6, 10));
-    tests.push(new Array(0, 4, 6));
-    tests.push(new Array(0, 2, 4, 6));
+    tests.push({
+        name: 'Inicio - primeiras notas',
+        timeBetweenNotes: 1500,
+        timeToKillNote: 6000,
+        passRate: 100,
+        noteQuantity: 10,
+        notes: new Array(0, 1, 2)
+    });
+
+    tests.push({
+        name: 'Inicio - meio do pentagrama',
+        timeBetweenNotes: 1200,
+        timeToKillNote: 6000,
+        passRate: 100,
+        noteQuantity: 13,
+        notes: new Array(3, 4, 5, 6)
+    });
+
+    tests.push({
+        name: 'Inicio - escala toda',
+        timeBetweenNotes: 1200,
+        timeToKillNote: 6000,
+        passRate: 100,
+        noteQuantity: 20,
+        notes: new Array(1, 2, 3, 4, 5, 6)
+    });
+
+    tests.push({
+        name: 'Inicio - nova escala',
+        timeBetweenNotes: 1000,
+        timeToKillNote: 6000,
+        passRate: 100,
+        noteQuantity: 20,
+        notes: new Array(7, 8, 9, 10, 11, 12, 13)
+    });
+
+    tests.push({
+        name: 'Inicio - duas escalas',
+        timeBetweenNotes: 1000,
+        timeToKillNote: 4500,
+        passRate: 100,
+        noteQuantity: 30,
+        notes: new Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13)
+    });
+
+    function createTest(test) {
+        var notes = new Array();
+
+        for (var i = 0; i < test.noteQuantity; i++) {
+            var position = Math.floor(Math.random() * test.notes.length);
+            notes.push(test.notes[position]);
+        }
+
+        var testInformation = {
+            notes: notes,
+            passRate: test.passRate,
+            passTime: 0,
+            timeBetweenNotes: test.timeBetweenNotes,
+            timeToKillNote: test.timeToKillNote
+        };
+
+        trainner.createTest(testInformation);
+    }
 
     $scope.allTests = angular.copy(tests);
 
@@ -280,21 +331,5 @@
                 trainner.checkNote(6);
                 break;
         }
-    }
-
-
-
-
-
-    function createTest(notes) {
-        var testInformation = {
-            notes: notes,
-            passRate: 100,
-            passTime: 0,
-            timeBetweenNotes: 1000,
-            timeToKillNote: 6000
-        };
-
-        trainner.createTest(testInformation);
     }
 }]);

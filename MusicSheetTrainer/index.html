@@ -34,6 +34,7 @@
             <p ng-show="currentUser != undefined"><a class="btn btn-lg btn-success" href="#" role="button" ng-click="startTest()">Iniciar!</a></p>
         </div>
         <div ng-show="isCurrentStep('test')">
+            <h2>{{ allTests[currentLevel].name }}</h2>
             <canvas id="canvas" width="800" height="300"></canvas>
             <br />
             <button class="keyboard" ng-click="checkNote('0')">[1] Dó</button>
@@ -86,7 +87,7 @@
                             ng-click="startChoosenTest($index)"
                             ng-disabled="$index > currentUser.currentLevel"
                             ng-class="{'btn-primary': $index <= currentUser.currentLevel, 'btn-default': $index > currentUser.currentLevel}">
-                        {{ $index }}
+                        {{ allTests[$index].name }}
                     </button>
                 </div>
             </div>
