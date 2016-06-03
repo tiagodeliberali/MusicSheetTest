@@ -71,6 +71,10 @@
     <Content Include="index.html" />
     <Content Include="images\logo.png" />
     <Content Include="images\logo_squared.png" />
+    <Content Include="pages\login.html" />
+    <Content Include="pages\result.html" />
+    <Content Include="pages\start.html" />
+    <Content Include="pages\test.html" />
     <Content Include="scripts\MusicSheet.js" />
     <Content Include="style\Site.css" />
     <Content Include="scripts\trainerApp.js" />
@@ -79,6 +83,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

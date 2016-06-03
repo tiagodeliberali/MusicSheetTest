@@ -1,0 +1,20 @@
+﻿<div class="jumbotron">
+    <h1>Desafie-se!</h1>
+    <p class="lead">Bem vindo, {{ apiMe.name }}!</p>
+    <p class="lead" ng-hide="isCurrentUserLoaded()">Carregando informações...</p>
+    <p ng-show="isCurrentUserLoaded()"><a class="btn btn-lg btn-success" href="#" role="button" ng-click="startTest()">Iniciar!</a></p>
+</div>
+<div ng-show="isCurrentUserLoaded()">
+    <h3>Desafios</h3>
+    <div class="btn-group btn-group-justified" role="group" aria-label="Justified button group">
+        <div class="btn-group" role="group" ng-repeat="test in allTests">
+            <button type="button"
+                    class="btn"
+                    ng-click="startChoosenTest($index)"
+                    ng-disabled="!hasAccessToLevel($index)"
+                    ng-class="{'btn-primary': hasAccessToLevel($index), 'btn-default': !hasAccessToLevel($index)}">
+                {{ allTests[$index].name }}
+            </button>
+        </div>
+    </div>
+</div>

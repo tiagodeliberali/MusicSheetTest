@@ -1,4 +1,4 @@
-﻿var trainerApp = angular.module('trainerApp', ['ezfb', 'backand'])
+﻿var trainerApp = angular.module('trainerApp', ['ezfb', 'backand', 'ngRoute'])
 
 .config(function (ezfbProvider) {
     ezfbProvider.setLocale('pt_BR');
@@ -13,6 +13,32 @@
     BackandProvider.setAppName('musicsheettrainer');
     BackandProvider.setSignUpToken('fd820533-b969-4877-a59b-f1f9c9d59850');
     BackandProvider.setAnonymousToken('62e58aa7-6bf4-47a6-8177-ef6ff18aa69d');
+})
+
+.config(function ($routeProvider) {
+    
+    $routeProvider
+    
+    .when('/login', {
+        templateUrl: 'pages/login.html',
+        controller: 'mainController'
+    })
+
+    .when('/start', {
+        templateUrl: 'pages/start.html',
+        controller: 'mainController'
+    })
+    
+    .when('/result', {
+        templateUrl: 'pages/result.html',
+        controller: 'mainController'
+    })
+    
+    .when('/test/:testId', {
+        templateUrl: 'pages/test.html',
+        controller: 'testController'
+    })
+    
 })
 
 .service('loginService', ['ezfb', '$q', function (ezfb, $q) {
@@ -121,10 +147,191 @@
     }
 }])
 
-.controller('mainController', ['$scope', 'loginService', 'dataService', function ($scope, loginService, dataService) {
-    $scope.currentStep = '';
-    $scope.currentLevel = 0;
+.controller('testController', ['$scope', '$location', '$routeParams', function ($scope, $location, $routeParams) {
+    var tests = getTests();
 
+    $scope.allTests = angular.copy(tests);
+
+    var onFinishFunction = function (result) {
+        $location.url("/result");
+        trainner.clear();
+
+        $scope.testResult = result;
+
+        if (result.passed) {
+            currentLevel++;
+
+            if (!$scope.hasAccessToLevel(currentLevel)) {
+                currentUser.currentLevel = currentLevel;
+                dataService.updateUserLevel(currentUser.id, currentUser.currentLevel);
+            }
+        }
+
+        $scope.isLastTest = currentUser.currentLevel >= tests.length;
+    };
+
+    var trainner = MS$({
+        scope: $scope,
+        sheetWidth: 700,
+        onFinish: onFinishFunction
+    });
+
+    trainner.clear();
+
+    createTest(tests[$routeParams.testId]);
+
+    $scope.checkNote = function (note) {
+        trainner.checkNote(note);
+    }
+
+    $scope.keyPressed = function (key) {
+        switch (key.keyCode) {
+            case 49:
+            case 97:
+                trainner.checkNote(0);
+                break;
+
+            case 50:
+            case 98:
+                trainner.checkNote(1);
+                break;
+
+            case 51:
+            case 99:
+                trainner.checkNote(2);
+                break;
+
+            case 52:
+            case 100:
+                trainner.checkNote(3);
+                break;
+
+            case 53:
+            case 101:
+                trainner.checkNote(4);
+                break;
+
+            case 54:
+            case 102:
+                trainner.checkNote(5);
+                break;
+
+            case 55:
+            case 103:
+                trainner.checkNote(6);
+                break;
+        }
+    }
+
+    function createTest(test) {
+        var notes = new Array();
+
+        for (var i = 0; i < test.noteQuantity; i++) {
+            var position = Math.floor(Math.random() * test.notes.length);
+            notes.push(test.notes[position]);
+        }
+
+        var testInformation = {
+            notes: notes,
+            passRate: test.passRate,
+            passTime: 0,
+            timeBetweenNotes: test.timeBetweenNotes,
+            timeToKillNote: test.timeToKillNote
+        };
+
+        trainner.createTest(testInformation);
+    }
+}])
+
+.controller('mainController', ['$scope', '$location', 'loginService', 'dataService', function ($scope, $location, loginService, dataService) {
+    var currentLevel = 0;
+    var currentUser;
+
+    var tests = getTests();
+
+    $scope.allTests = angular.copy(tests);
+
+    loginService.loginStatus().then(function (res) {
+        updateLoginStatus(res);
+    });
+
+    $scope.login = function () {
+        loginService.login().then(function (res) {
+            updateLoginStatus(res);
+        });
+    };
+
+    $scope.logout = function () {
+        loginService.logout().then(function (res) {
+            updateLoginStatus(res);
+            currentUser = undefined;
+        });
+    };
+
+    function updateLoginStatus(res) {
+        $scope.loginStatus = res;
+
+        if (res.status === 'connected') {
+            $location.url("/start");
+            
+            loginService.updateApiMe().then(function (res) {
+                $scope.apiMe = res;
+                getUserInformation(res);
+            });
+        }
+        else {
+            $location.url("/login");
+        }
+    }
+
+    function getUserInformation(res) {
+        dataService.getUser(res.id).then(function (getUserResult) {
+            if (getUserResult.data.length === 0) {
+                dataService.createUser($scope.apiMe.id, $scope.apiMe.name)
+                    .then(function (createUserResult) {
+                        currentUser = createUserResult.data;
+                        currentLevel = currentUser.currentLevel;
+                    }, function (result) {
+                        console.log(result);
+                    });;
+            }
+            else {
+                currentUser = getUserResult.data[0];
+                currentLevel = currentUser.currentLevel;
+            }
+
+        }, function (result) {
+            console.log(result);
+        });
+    }
+
+    $scope.share = function () {
+        loginService.share(
+            'Vamos treinar leitura de partitura?',
+            'http://musicsheettrainer.azurewebsites.net',
+            'Exercite a leitura de partitura de forma fácil e divertida!');
+    };
+
+    $scope.isCurrentUserLoaded = function () {
+        return currentUser != undefined;
+    }
+
+    $scope.hasAccessToLevel = function (level) {
+        return $scope.isCurrentUserLoaded() && currentUser.currentLevel >= level;
+    }
+
+    $scope.startChoosenTest = function (level) {
+        currentLevel = level;
+        $scope.startTest();
+    };
+
+    $scope.startTest = function () {
+        $location.url("/test/" + currentLevel);
+    };
+}]);
+
+
+function getTests() {
     var tests = new Array();
     tests.push({
         name: 'Inicio - primeiras notas',
@@ -171,165 +378,5 @@
         notes: new Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13)
     });
 
-    function createTest(test) {
-        var notes = new Array();
-
-        for (var i = 0; i < test.noteQuantity; i++) {
-            var position = Math.floor(Math.random() * test.notes.length);
-            notes.push(test.notes[position]);
-        }
-
-        var testInformation = {
-            notes: notes,
-            passRate: test.passRate,
-            passTime: 0,
-            timeBetweenNotes: test.timeBetweenNotes,
-            timeToKillNote: test.timeToKillNote
-        };
-
-        trainner.createTest(testInformation);
-    }
-
-    $scope.allTests = angular.copy(tests);
-
-    loginService.loginStatus().then(function (res) {
-        updateLoginStatus(res);
-    });
-
-    $scope.login = function () {
-        loginService.login().then(function (res) {
-            updateLoginStatus(res);
-        });
-    };
-
-    $scope.logout = function () {
-        loginService.logout().then(function (res) {
-            updateLoginStatus(res);
-            trainner.clear();
-            $scope.currentUser = undefined;
-        });
-    };
-
-    function updateLoginStatus(res) {
-        $scope.loginStatus = res;
-
-        if (res.status === 'connected') {
-            $scope.currentStep = 'pre_test';
-
-            loginService.updateApiMe().then(function (res) {
-                $scope.apiMe = res;
-                getUserInformation(res)
-            });
-        }
-        else {
-            $scope.currentStep = 'not_logged';
-        }
-    }
-
-    function getUserInformation(res) {
-        dataService.getUser(res.id).then(function (getUserResult) {
-            if (getUserResult.data.length === 0) {
-                dataService.createUser($scope.apiMe.id, $scope.apiMe.name)
-                    .then(function (createUserResult) {
-                        $scope.currentUser = createUserResult.data;
-                        $scope.currentLevel = $scope.currentUser.currentLevel;
-                    }, function (result) {
-                        console.log(result);
-                    });;
-            }
-            else {
-                $scope.currentUser = getUserResult.data[0];
-                $scope.currentLevel = $scope.currentUser.currentLevel;
-            }
-
-        }, function (result) {
-            console.log(result);
-        });
-    }
-
-    $scope.share = function () {
-        loginService.share(
-            'Vamos treinar leitura de partitura?',
-            'http://musicsheettrainer.azurewebsites.net',
-            'Exercite a leitura de partitura de forma fácil e divertida!');
-    };
-
-    var onFinishFunction = function (result) {
-        $scope.currentStep = 'result'
-        $scope.testResult = result;
-
-        if (result.passed) {
-            $scope.currentLevel++;
-
-            if ($scope.currentLevel > $scope.currentUser.currentLevel) {
-                $scope.currentUser.currentLevel = $scope.currentLevel;
-                dataService.updateUserLevel($scope.currentUser.id, $scope.currentUser.currentLevel);
-            }
-        }
-
-        $scope.isLastTest = $scope.currentUser.currentLevel >= tests.length;
-    };
-
-    var trainner = MS$({
-        scope: $scope,
-        sheetWidth: 700,
-        onFinish: onFinishFunction
-    });
-
-    $scope.isCurrentStep = function (step) {
-        return $scope.currentStep == step
-    };
-
-    $scope.startChoosenTest = function (level) {
-        $scope.currentLevel = level;
-        $scope.startTest();
-    };
-
-    $scope.startTest = function () {
-        $scope.currentStep = 'test';
-        createTest(tests[$scope.currentLevel]);
-    };
-
-    $scope.checkNote = function (note) {
-        trainner.checkNote(note);
-    }
-
-    $scope.keyPressed = function (key) {
-        switch (key.keyCode) {
-            case 49:
-            case 97:
-                trainner.checkNote(0);
-                break;
-
-            case 50:
-            case 98:
-                trainner.checkNote(1);
-                break;
-
-            case 51:
-            case 99:
-                trainner.checkNote(2);
-                break;
-
-            case 52:
-            case 100:
-                trainner.checkNote(3);
-                break;
-
-            case 53:
-            case 101:
-                trainner.checkNote(4);
-                break;
-
-            case 54:
-            case 102:
-                trainner.checkNote(5);
-                break;
-
-            case 55:
-            case 103:
-                trainner.checkNote(6);
-                break;
-        }
-    }
-}]);
+    return tests;
+}

@@ -1,9 +1,10 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" ng-app="trainerApp">
 <head>
-    <title>Music Sheet Trainer</title>
+    <title>Partitura fácil</title>
     <script src="//ocanvas.org/source/ocanvas-2.8.4.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.js"></script>
     <script src="//pc035860.github.io/angular-easyfb/angular-easyfb.min.js"></script>
     <script src="//cdn.backand.net/backand/dist/1.8.2/backand.min.js"></script>
     <script src="scripts/MusicSheet.js"></script>
@@ -11,87 +12,18 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link rel="stylesheet" href="style/Site.css">
 </head>
-<body ng-controller="mainController" ng-keyup="keyPressed($event)">
+<body ng-controller="mainController">
     <div class="container">
         <div class="header clearfix">
             <nav>
-                <ul class="nav nav-pills pull-right" ng-hide="!loginStatus || loginStatus.status != 'connected'">
+                <ul class="nav nav-pills pull-right" ng-show="isCurrentStep('not_logged')">
                     <li role="presentation" class="active"><a href="#" ng-click="share()">Compartilhar</a></li>
                     <li role="presentation"><a href="#" ng-click="logout()">Sair</a></li>
                 </ul>
             </nav>
             <img src="images/logo.png" />
         </div>
-        <div ng-show="isCurrentStep('not_logged')" class="jumbotron">
-            <h1>Vamos começar?</h1>
-            <p class="lead">Preparare-se para desafiar e aprimorar sua capacidade de ler partituras</p>
-            <p><a class="btn btn-lg btn-primary" href="#" role="button" ng-click="login()">Conecte-se com o Facebook</a></p>
-        </div>
-        <div ng-show="isCurrentStep('pre_test')" class="jumbotron">
-            <h1>Desafie-se!</h1>
-            <p class="lead">Bem vindo, {{ apiMe.name }}!</p>
-            <p class="lead" ng-show="currentUser == undefined">Carregando informações...</p>
-            <p ng-show="currentUser != undefined"><a class="btn btn-lg btn-success" href="#" role="button" ng-click="startTest()">Iniciar!</a></p>
-        </div>
-        <div ng-show="isCurrentStep('test')">
-            <h2>{{ allTests[currentLevel].name }}</h2>
-            <canvas id="canvas" width="800" height="300"></canvas>
-            <br />
-            <button class="keyboard" ng-click="checkNote('0')">[1] Dó</button>
-            <button class="keyboard" ng-click="checkNote('1')">[2] Ré</button>
-            <button class="keyboard" ng-click="checkNote('2')">[3] Mi</button>
-            <button class="keyboard" ng-click="checkNote('3')">[4] Fá</button>
-            <button class="keyboard" ng-click="checkNote('4')">[5] Sol</button>
-            <button class="keyboard" ng-click="checkNote('5')">[6] Lá</button>
-            <button class="keyboard" ng-click="checkNote('6')">[7] Si</button>
-        </div>
-        <div ng-show="isCurrentStep('result')">
-            <div class="alert alert-danger" role="alert" ng-show="!testResult.passed">
-                <span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
-                <span class="sr-only">Error:</span>
-                Você não atingiu os {{ testResult.testInformation.passRate }}% esperados
-            </div>
-            <div class="alert alert-success" role="alert" ng-show="testResult.passed">
-                <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
-                <span class="sr-only">Success:</span>
-                Parabéns!
-            </div>
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Acertos:</label>
-                    <div class="col-sm-10">
-                        <p class="form-control-static">{{ testResult.correct || 0 }} ({{ testResult.correct * 100 / testResult.total }}%)</p>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Erros:</label>
-                    <div class="col-sm-10">
-                        <p class="form-control-static">{{ testResult.error || 0 }}</p>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Tempo:</label>
-                    <div class="col-sm-10">
-                        <p class="form-control-static">{{ (testResult.timeTaken || 0) / 1000 }} segundos</p>
-                    </div>
-                </div>
-            </form>
-            <button class="btn btn-primary" ng-click="startTest()" ng-hide="isLastTest">{{ (testResult.passed ? "Próximo desafio" : "Tentar novamente") }}</button>
-        </div>
-        <div ng-show="currentUser != undefined && (isCurrentStep('pre_test') || isCurrentStep('result'))">
-            <h3>Desafios</h3>
-            <div class="btn-group btn-group-justified" role="group" aria-label="Justified button group">
-                <div class="btn-group" role="group" ng-repeat="test in allTests">
-                    <button type="button"
-                            class="btn"
-                            ng-click="startChoosenTest($index)"
-                            ng-disabled="$index > currentUser.currentLevel"
-                            ng-class="{'btn-primary': $index <= currentUser.currentLevel, 'btn-default': $index > currentUser.currentLevel}">
-                        {{ allTests[$index].name }}
-                    </button>
-                </div>
-            </div>
-        </div>
+        <div ng-view></div> 
     </div>
 </body>
 </html>
