@@ -98,7 +98,7 @@
                 this.sheet.drawLine(options.sheetWidth, options.noteSize * i + options.sheetStartPosition);
             }
 
-            this.sheet.drawClef('GClef.png');
+            this.sheet.drawClef('images/GClef.png');
         },
 
         checkNote: function (note) {

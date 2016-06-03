@@ -16,9 +16,9 @@
 })
 
 .config(function ($routeProvider) {
-    
+
     $routeProvider
-    
+
     .when('/login', {
         templateUrl: 'pages/login.html',
         controller: 'mainController'
@@ -28,20 +28,25 @@
         templateUrl: 'pages/start.html',
         controller: 'mainController'
     })
-    
+
     .when('/result', {
         templateUrl: 'pages/result.html',
         controller: 'mainController'
     })
-    
+
     .when('/test/:testId', {
         templateUrl: 'pages/test.html',
         controller: 'testController'
     })
-    
+
 })
 
-.service('loginService', ['ezfb', '$q', function (ezfb, $q) {
+.service('loginService', ['ezfb', '$q', 'dataService', function (ezfb, $q, dataService) {
+    this.currentUser = undefined;
+    this.apiMe = undefined;
+
+    var _self = this;
+
     this.login = function () {
         var deferred = $q.defer();
 
@@ -60,6 +65,9 @@
         var deferred = $q.defer();
 
         ezfb.logout(function () {
+            _self.currentUser = undefined;
+            _self.apiMe = undefined;
+
             updateLoginStatus(deferred.resolve);
         });
 
@@ -106,7 +114,38 @@
 
     function updateLoginStatus(action) {
         ezfb.getLoginStatus(function (res) {
-            action(res);
+            if (res.status === 'connected') {
+                _self.updateApiMe().then(function (user) {
+                    _self.apiMe = user;
+                    getUserInformation(user, action);
+                });
+            }
+            else {
+                action();
+            }
+        });
+    }
+
+    function getUserInformation(user, action) {
+        dataService.getUser(user.id).then(function (getUserResult) {
+            if (getUserResult.data.length === 0) {
+                dataService.createUser($scope.apiMe.id, $scope.apiMe.name)
+                    .then(function (createUserResult) {
+                        _self.currentUser = createUserResult.data;
+                        action();
+                    }, function (result) {
+                        console.log(result);
+                        action();
+                    });;
+            }
+            else {
+                _self.currentUser = getUserResult.data[0];
+                action();
+            }
+
+        }, function (result) {
+            console.log(result);
+            action();
         });
     }
 }])
@@ -147,7 +186,7 @@
     }
 }])
 
-.controller('testController', ['$scope', '$location', '$routeParams', function ($scope, $location, $routeParams) {
+.controller('testController', ['$scope', '$location', '$routeParams', 'loginService', function ($scope, $location, $routeParams, loginService) {
     var tests = getTests();
 
     $scope.allTests = angular.copy(tests);
@@ -162,12 +201,12 @@
             currentLevel++;
 
             if (!$scope.hasAccessToLevel(currentLevel)) {
-                currentUser.currentLevel = currentLevel;
-                dataService.updateUserLevel(currentUser.id, currentUser.currentLevel);
+                loginService.currentUser.currentLevel = currentLevel;
+                dataService.updateUserLevel(loginService.currentUser.id, loginService.currentUser.currentLevel);
             }
         }
 
-        $scope.isLastTest = currentUser.currentLevel >= tests.length;
+        $scope.isLastTest = loginService.currentUser.currentLevel >= tests.length;
     };
 
     var trainner = MS$({
@@ -245,7 +284,6 @@
 
 .controller('mainController', ['$scope', '$location', 'loginService', 'dataService', function ($scope, $location, loginService, dataService) {
     var currentLevel = 0;
-    var currentUser;
 
     var tests = getTests();
 
@@ -264,45 +302,17 @@
     $scope.logout = function () {
         loginService.logout().then(function (res) {
             updateLoginStatus(res);
-            currentUser = undefined;
         });
     };
 
     function updateLoginStatus(res) {
-        $scope.loginStatus = res;
-
-        if (res.status === 'connected') {
-            $location.url("/start");
-            
-            loginService.updateApiMe().then(function (res) {
-                $scope.apiMe = res;
-                getUserInformation(res);
-            });
-        }
-        else {
+        if (loginService.currentUser == undefined) {
             $location.url("/login");
         }
-    }
-
-    function getUserInformation(res) {
-        dataService.getUser(res.id).then(function (getUserResult) {
-            if (getUserResult.data.length === 0) {
-                dataService.createUser($scope.apiMe.id, $scope.apiMe.name)
-                    .then(function (createUserResult) {
-                        currentUser = createUserResult.data;
-                        currentLevel = currentUser.currentLevel;
-                    }, function (result) {
-                        console.log(result);
-                    });;
-            }
-            else {
-                currentUser = getUserResult.data[0];
-                currentLevel = currentUser.currentLevel;
-            }
-
-        }, function (result) {
-            console.log(result);
-        });
+        else {
+            $location.url("/start");
+            currentLevel = loginService.currentUser.currentLevel;
+        }
     }
 
     $scope.share = function () {
@@ -313,11 +323,11 @@
     };
 
     $scope.isCurrentUserLoaded = function () {
-        return currentUser != undefined;
+        return loginService.currentUser != undefined;
     }
 
     $scope.hasAccessToLevel = function (level) {
-        return $scope.isCurrentUserLoaded() && currentUser.currentLevel >= level;
+        return $scope.isCurrentUserLoaded() && loginService.currentUser.currentLevel >= level;
     }
 
     $scope.startChoosenTest = function (level) {
