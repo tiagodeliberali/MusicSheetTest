@@ -1,6 +1,6 @@
 ﻿<div class="jumbotron">
     <h1>Desafie-se!</h1>
-    <p class="lead">Bem vindo, {{ apiMe.name }}!</p>
+    <p class="lead" ng-show="isCurrentUserLoaded()">Bem vindo, {{ name }}!</p>
     <p class="lead" ng-hide="isCurrentUserLoaded()">Carregando informações...</p>
     <p ng-show="isCurrentUserLoaded()"><a class="btn btn-lg btn-success" href="#" role="button" ng-click="startTest()">Iniciar!</a></p>
 </div>

@@ -29,9 +29,9 @@
             </div>
         </div>
     </form>
-    <button class="btn btn-primary" ng-click="startTest()" ng-hide="isLastTest">{{ (testResult.passed ? "Próximo desafio" : "Tentar novamente") }}</button>
+    <button class="btn btn-primary" ng-click="startTest()" ng-show="!isLastTest() || !testResult.passed">{{ (testResult.passed ? "Próximo desafio" : "Tentar novamente") }}</button>
 </div>
-<div ng-show="isCurrentUserLoaded()">
+<div>
     <h3>Desafios</h3>
     <div class="btn-group btn-group-justified" role="group" aria-label="Justified button group">
         <div class="btn-group" role="group" ng-repeat="test in allTests">
