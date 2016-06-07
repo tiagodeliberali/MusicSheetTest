@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicSheetTrainer", "MusicSheetTrainer\MusicSheetTrainer.csproj", "{B7154699-A429-40CE-A7FF-F1A5AC3A7E3D}"
 EndProject
