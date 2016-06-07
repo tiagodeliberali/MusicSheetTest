@@ -11,11 +11,15 @@
                 <div class="caption">
                     <h3>{{ allTests[$index].name }}</h3>
                     <p>{{ allTests[$index].description }}</p>
-                    <p><button type="button" style=""
-                        class="btn"
-                        ng-click="startChoosenTest($index)"
-                        ng-disabled="!hasAccessToLevel($index)"
-                        ng-class="{'btn-primary': hasAccessToLevel($index), 'btn-default': !hasAccessToLevel($index)}">Iniciar</button></p>
+                    <p>
+                        <button type="button"
+                                class="btn bottomright"
+                                ng-click="startChoosenTest($index)"
+                                ng-disabled="!hasAccessToLevel($index)"
+                                ng-class="{'btn-primary': hasAccessToLevel($index), 'btn-default': !hasAccessToLevel($index)}">
+                            Iniciar
+                        </button>
+                    </p>
                 </div>
             </div>
         </div>
