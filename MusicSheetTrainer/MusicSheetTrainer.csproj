@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="images\GClef.png" />
+    <Content Include="images\test_icon.png" />
     <Content Include="index.html" />
     <Content Include="images\logo.png" />
     <Content Include="images\logo_squared.png" />

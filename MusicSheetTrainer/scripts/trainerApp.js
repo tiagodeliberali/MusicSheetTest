@@ -19,6 +19,11 @@
 
     $routeProvider
 
+    .when('/', {
+        templateUrl: 'pages/login.html',
+        controller: 'mainController'
+    })
+
     .when('/login', {
         templateUrl: 'pages/login.html',
         controller: 'mainController'
@@ -368,7 +373,8 @@
 function getTests() {
     var tests = new Array();
     tests.push({
-        name: 'Inicio - primeiras notas',
+        name: 'Primeiras notas',
+        description: 'Em baixa velocidade, vamos estudar a posição do Dó, Ré e Mi.',
         timeBetweenNotes: 1500,
         timeToKillNote: 6000,
         passRate: 100,
@@ -377,7 +383,8 @@ function getTests() {
     });
 
     tests.push({
-        name: 'Inicio - meio do pentagrama',
+        name: 'Meio do pentagrama',
+        description: 'Seguindo nosso estudo, vamos para o meio do pentagrama da clave de Sol com o Fá, Sol, Lá e Si.',
         timeBetweenNotes: 1200,
         timeToKillNote: 6000,
         passRate: 100,
@@ -386,7 +393,8 @@ function getTests() {
     });
 
     tests.push({
-        name: 'Inicio - escala toda',
+        name: 'Escala toda',
+        description: 'Agora, para praticar, vamos pegar a escala toda, com um pouco mais de velocidade.',
         timeBetweenNotes: 1200,
         timeToKillNote: 6000,
         passRate: 100,
@@ -395,7 +403,8 @@ function getTests() {
     });
 
     tests.push({
-        name: 'Inicio - nova escala',
+        name: 'Nova escala',
+        description: 'Vamos subir para a próxima escala, com todas as notas do Dó ao Si.',
         timeBetweenNotes: 1000,
         timeToKillNote: 6000,
         passRate: 100,
@@ -404,7 +413,8 @@ function getTests() {
     });
 
     tests.push({
-        name: 'Inicio - duas escalas',
+        name: 'Duas escalas',
+        description: 'Para finalizar o estudo da clave de Sol, vamos aumentar a velocidade e encarar notas nas duas escalas.',
         timeBetweenNotes: 1000,
         timeToKillNote: 4500,
         passRate: 100,

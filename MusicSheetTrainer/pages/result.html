@@ -31,17 +31,25 @@
     </form>
     <button class="btn btn-primary" ng-click="startTest()" ng-show="!isLastTest() || !testResult.passed">{{ (testResult.passed ? "Próximo desafio" : "Tentar novamente") }}</button>
 </div>
-<div>
-    <h3>Desafios</h3>
-    <div class="btn-group btn-group-justified" role="group" aria-label="Justified button group">
-        <div class="btn-group" role="group" ng-repeat="test in allTests">
-            <button type="button"
-                    class="btn"
-                    ng-click="startChoosenTest($index)"
-                    ng-disabled="!hasAccessToLevel($index)"
-                    ng-class="{'btn-primary': hasAccessToLevel($index), 'btn-default': !hasAccessToLevel($index)}">
-                {{ allTests[$index].name }}
-            </button>
+<div ng-show="isCurrentUserLoaded()">
+    <div class="row">
+        <div class="col-sm-6 col-md-4" ng-repeat="test in allTests">
+            <div class="thumbnail" style="height: 400px">
+                <img src="images/test_icon.png" alt="Clave de Sol">
+                <div class="caption">
+                    <h3>{{ allTests[$index].name }}</h3>
+                    <p>{{ allTests[$index].description }}</p>
+                    <p>
+                        <button type="button" style=""
+                                class="btn"
+                                ng-click="startChoosenTest($index)"
+                                ng-disabled="!hasAccessToLevel($index)"
+                                ng-class="{'btn-primary': hasAccessToLevel($index), 'btn-default': !hasAccessToLevel($index)}">
+                            Iniciar
+                        </button>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
