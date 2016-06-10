@@ -233,7 +233,7 @@
         userService.testResult = result;
 
         if (result.passed) {
-            currentLevel++;
+            userService.currentUser.currentLevel++;
 
             if (userService.currentUser.currentLevel < level) {
                 userService.currentUser.currentLevel = currentLevel;
@@ -242,10 +242,16 @@
         }
     };
 
+    onNoteIsKilledFunction = function () {
+        $scope.$apply(function () {
+            trainner.checkNote(-1);
+        });
+    };
+
     var trainner = MS$({
-        scope: $scope,
         sheetWidth: 700,
-        onFinish: onFinishFunction
+        onFinish: onFinishFunction,
+        onNoteIsKilled: onNoteIsKilledFunction
     });
 
     trainner.clear();

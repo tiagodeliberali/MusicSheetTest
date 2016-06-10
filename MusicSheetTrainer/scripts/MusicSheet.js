@@ -4,17 +4,36 @@
     var sheet = null;
 
     var options = {
+        /* POSITIONS */
         noteSize: 30,
         sheetStartPosition: 70, 
         sheetWidth: 900,
+        startScreenPosition: 10,
+        killPosition: 150,
+        killArea: 50,
+
+        /* DRAWING FRAMEWORK */
+        canvasName: "#canvas",
+        fps: 60,
+        
+        /* STYLES */
+        noteStroke: "5px #555555",
+        noteStrokeCorrect: "5px #00b926",
+        noteStrokeWrong: "5px #ff0000",
+        lineStroke: "5px #0aa",
+        killLineStroke: "5px #bbbbbb",
+        lineCap: "round",
+
+        /* EVENTS */
         onFinish: function (results) { },
+        onNoteIsKilled: function () { },
     };
 
     var testInformation = {};
 
     // 'new' an object
-    var MusicSheet = function (userOptions, userSheetOptions) {
-        return new MusicSheet.init(userOptions || {}, userSheetOptions || {});
+    var MusicSheet = function (userOptions) {
+        return new MusicSheet.init(userOptions || {});
     }
 
     MusicSheet.prototype = {
@@ -92,7 +111,10 @@
         },
 
         drawSheetLines: function () {
-            this.sheet.drawKillLine(options.sheetStartPosition - options.noteSize, options.noteSize * 7.5);
+            this.sheet.drawKillArea(
+                options.sheetStartPosition - options.noteSize,
+                options.noteSize * 7.5,
+                options.killArea);
 
             for (var i = 0; i < 5; i++) {
                 this.sheet.drawLine(options.sheetWidth, options.noteSize * i + options.sheetStartPosition);
@@ -104,7 +126,7 @@
         checkNote: function (note) {
             var currentValidation = testResults.length;
 
-            if (noteElements[currentValidation] == undefined) {
+            if (noteElements[currentValidation] == undefined || noteElements[currentValidation].element.x > options.killPosition + options.killArea) {
                 return;
             }
 
@@ -157,21 +179,25 @@
         getNodeCenterX: function(position) {
             return options.noteSize * 1.5 + position * options.noteSize * 2.5;
         },
+
+        copyAttributes: function (target, src) {
+            for (var key in src) {
+                if (src[key] !== undefined) {
+                    target[key] = src[key];
+                }
+            }
+
+            return target;
+        },
     };
 
     // the actual object is created here, allowing us to 'new' an object without calling 'new'
-    MusicSheet.init = function (userOptions, userSheetOptions) {
+    MusicSheet.init = function (userOptions) {
         var self = this;
 
-        userSheetOptions.onNoteIsKilled = function () {
-            userOptions.scope.$apply(function () {
-                self.checkNote(-1);
-            });
-        };
+        self.copyAttributes(options, userOptions);
 
-        self.sheet = SheetDesigner(userSheetOptions);
-
-        self.sheet.copyAttributes(options, userOptions);
+        self.sheet = SheetDesigner(options);
 
         self.drawSheetLines();
     }
@@ -187,21 +213,7 @@
     // Responsible for drawing the sheet. Can be exchanged in future for a better library
     (function (global) {
         var canvas = null;
-
-        var sheetOptions = {
-            canvasName: "#canvas",
-            fps: 60,
-            startScreenPosition: 10,
-            killPosition: 150,
-            onNoteIsKilled: function () { },
-
-            noteStroke: "5px #555555",
-            noteStrokeCorrect: "5px #00b926",
-            noteStrokeWrong: "5px #ff0000",
-            lineStroke: "5px #0aa",
-            killLineStroke: "5px #bbbbbb",
-            lineCap: "round"
-        }
+        var sheetOptions = {}
 
         // 'new' an object
         var SheetDesigner = function (userSheetOptions) {
@@ -278,17 +290,27 @@
                 return element;
             },
 
-            drawKillLine: function (start, end) {
-                var element = this.canvas.display.line({
+            drawKillArea: function (start, end, killArea) {
+                var line = this.canvas.display.line({
                     start: { x: sheetOptions.killPosition, y: start },
                     end: { x: sheetOptions.killPosition, y: end },
                     stroke: sheetOptions.killLineStroke,
                     cap: sheetOptions.lineCap
                 });
 
-                this.canvas.addChild(element);
+                this.canvas.addChild(line);
 
-                return element;
+                var rectangle = this.canvas.display.rectangle({
+                    x: sheetOptions.killPosition,
+                    y: start,
+                    width: killArea,
+                    height: end - start,
+                    fill: "#EEEEEE"
+                });
+
+                this.canvas.addChild(rectangle);
+
+                return line;
             },
 
             drawClef: function(clefName) {
@@ -329,11 +351,11 @@
 
         // the actual object is created here, allowing us to 'new' an object without calling 'new'
         SheetDesigner.init = function (userSheetOptions) {
+            this.copyAttributes(sheetOptions, userSheetOptions);
+
             this.canvas = oCanvas.create({
                 canvas: sheetOptions.canvasName
             });
-
-            this.copyAttributes(sheetOptions, userSheetOptions);
         }
 
         // trick borrowed from jQuery so we don't have to use the 'new' keyword
