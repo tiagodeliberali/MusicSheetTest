@@ -3,25 +3,4 @@
     <p class="lead" ng-show="isCurrentUserLoaded()">Bem vindo, {{ name }}!</p>
     <p class="lead" ng-hide="isCurrentUserLoaded()">Carregando informações...</p>
 </div>
-<div ng-show="isCurrentUserLoaded()">
-    <div class="row">
-        <div class="col-sm-6 col-md-4" ng-repeat="test in allTests">
-            <div class="thumbnail" style="height: 400px">
-                <img src="images/test_icon.png" alt="Clave de Sol">
-                <div class="caption">
-                    <h3>{{ allTests[$index].name }}</h3>
-                    <p>{{ allTests[$index].description }}</p>
-                    <p>
-                        <button type="button"
-                                class="btn bottomright"
-                                ng-click="startChoosenTest($index)"
-                                ng-disabled="!hasAccessToLevel($index)"
-                                ng-class="{'btn-primary': hasAccessToLevel($index), 'btn-default': !hasAccessToLevel($index)}">
-                            Iniciar
-                        </button>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<trainer-selector />

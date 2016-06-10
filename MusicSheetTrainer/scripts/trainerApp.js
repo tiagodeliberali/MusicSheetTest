@@ -194,7 +194,8 @@
 
 .controller('resultController', ['$scope', '$location', 'userService', function ($scope, $location, userService) {
     var currentLevel = userService.currentUser.currentLevel;
-    var tests = getTests();
+    
+    $scope.allTests = getTests();
 
     $scope.testResult = userService.testResult;
 
@@ -212,8 +213,12 @@
     };
 
     $scope.isLastTest = function () {
-        return currentLevel < tests.length;
+        return currentLevel < $scope.allTests.length;
     };
+
+    $scope.isCurrentUserLoaded = function () {
+        return userService.currentUser != undefined;
+    }
 }])
 
 .controller('testController', ['$scope', '$location', '$routeParams', 'userService', function ($scope, $location, $routeParams, userService) {
@@ -367,8 +372,14 @@
     $scope.startTest = function () {
         $location.url("/test/" + currentLevel);
     };
-}]);
+}])
 
+.directive('trainerSelector', function () {
+    return {
+        restrict: 'E',
+        templateUrl: 'directives/trainerSelector.html'
+    };
+});
 
 function getTests() {
     var tests = new Array();

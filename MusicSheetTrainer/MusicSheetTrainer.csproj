@@ -67,6 +67,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="directives\trainerSelector.html" />
     <Content Include="images\GClef.png" />
     <Content Include="images\test_icon.png" />
     <Content Include="index.html" />
