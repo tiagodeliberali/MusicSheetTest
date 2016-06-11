@@ -192,6 +192,29 @@
     }
 }])
 
+.controller('pageController', ['$rootScope', '$scope', '$location', 'userService', function ($rootScope, $scope, $location, userService) {
+    $scope.logout = function () {
+        userService.logout().then(function (res) {
+            $location.url("/login");
+        });
+    };
+
+    $scope.isCurrentUserLoaded = function () {
+        return userService.currentUser != undefined;
+    };
+
+    $scope.share = function () {
+        userService.share(
+            'Vamos treinar leitura de partitura?',
+            'http://musicsheettrainer.azurewebsites.net',
+            'Exercite a leitura de partitura de forma fácil e divertida!');
+    };
+
+    $scope.keyPressed = function (key) {
+        $rootScope.$broadcast('page.keyPressed', key);
+    };
+}])
+
 .controller('resultController', ['$scope', '$location', 'userService', function ($scope, $location, userService) {
     var currentLevel = userService.currentUser.currentLevel;
     
@@ -262,8 +285,8 @@
         trainner.checkNote(note);
     }
 
-    $scope.keyPressed = function (key) {
-        switch (key.keyCode) {
+    $scope.$on('page.keyPressed', function (event, arg) {
+        switch (arg.keyCode) {
             case 49:
             case 97:
                 trainner.checkNote(0);
@@ -299,7 +322,7 @@
                 trainner.checkNote(6);
                 break;
         }
-    }
+    });
 
     function createTest(test) {
         var notes = new Array();
@@ -321,7 +344,7 @@
     }
 }])
 
-.controller('mainController', ['$scope', '$location', 'userService', 'dataService', function ($scope, $location, userService, dataService) {
+.controller('mainController',   ['$scope', '$location', 'userService', 'dataService', function ($scope, $location, userService, dataService) {
     var currentLevel = 0;
 
     var tests = getTests();
@@ -338,12 +361,6 @@
         });
     };
 
-    $scope.logout = function () {
-        userService.logout().then(function (res) {
-            updateLoginStatus(res);
-        });
-    };
-
     function updateLoginStatus(res) {
         if (userService.currentUser == undefined) {
             $location.url("/login");
@@ -353,22 +370,11 @@
             currentLevel = userService.currentUser.currentLevel;
             $scope.name = userService.currentUser.name;
         }
-    }
-
-    $scope.share = function () {
-        userService.share(
-            'Vamos treinar leitura de partitura?',
-            'http://musicsheettrainer.azurewebsites.net',
-            'Exercite a leitura de partitura de forma fácil e divertida!');
     };
 
-    $scope.isCurrentUserLoaded = function () {
-        return userService.currentUser != undefined;
-    }
-
     $scope.hasAccessToLevel = function (level) {
-        return $scope.isCurrentUserLoaded() && userService.currentUser.currentLevel >= level;
-    }
+        return userService.currentUser != undefined && userService.currentUser.currentLevel >= level;
+    };
 
     $scope.startChoosenTest = function (level) {
         currentLevel = level;

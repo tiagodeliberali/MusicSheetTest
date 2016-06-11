@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" ng-app="trainerApp">
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="trainerApp" ng-controller="pageController" ng-keyup="keyPressed($event)">
 <head>
     <title>Partitura fácil</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,14 +17,14 @@
     <div class="container">
         <div class="header clearfix">
             <nav>
-                <ul class="nav nav-pills pull-right" ng-show="isCurrentStep('not_logged')">
-                    <li role="presentation" class="active"><a href="#" ng-click="share()">Compartilhar</a></li>
+                <ul class="nav nav-pills pull-right" ng-show="(isCurrentUserLoaded || angular.noop)()">
+                    <li role="presentation" class="active" ng-click="share()"><a href="#">Compartilhar</a></li>
                     <li role="presentation"><a href="#" ng-click="logout()">Sair</a></li>
                 </ul>
             </nav>
             <a href="/#/"><img src="images/logo.png" /></a>
         </div>
-        <div ng-view></div> 
+        <div ng-view></div>
     </div>
 </body>
 </html>
