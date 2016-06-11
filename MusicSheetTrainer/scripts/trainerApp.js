@@ -193,15 +193,44 @@
 }])
 
 .controller('pageController', ['$rootScope', '$scope', '$location', 'userService', function ($rootScope, $scope, $location, userService) {
+    var currentLevel = 0;
+
+    userService.loginStatus().then(function (res) {
+        loginAction();
+    });
+
+    $scope.allTests = getTests();
+
+    $scope.login = function () {
+        userService.login().then(function (res) {
+            loginAction();
+        });
+    };
+
+    function loginAction() {
+        if (userService.currentUser == undefined) {
+            $location.url('/login');
+        }
+        else {
+            currentLevel = userService.currentUser.currentLevel;
+            $scope.name = userService.currentUser.name;
+        }
+    }
+
     $scope.logout = function () {
         userService.logout().then(function (res) {
-            $location.url("/login");
+            $location.url('/login');
         });
     };
 
     $scope.isCurrentUserLoaded = function () {
         return userService.currentUser != undefined;
     };
+
+    $scope.hasAccessToLevel = function (level) {
+        //return userService.currentUser != undefined && userService.currentUser.currentLevel >= level;
+        return true;
+    }
 
     $scope.share = function () {
         userService.share(
@@ -210,47 +239,39 @@
             'Exercite a leitura de partitura de forma fácil e divertida!');
     };
 
-    $scope.keyPressed = function (key) {
-        $rootScope.$broadcast('page.keyPressed', key);
-    };
-}])
-
-.controller('resultController', ['$scope', '$location', 'userService', function ($scope, $location, userService) {
-    var currentLevel = userService.currentUser.currentLevel;
-    
-    $scope.allTests = getTests();
-
-    $scope.testResult = userService.testResult;
-
-    $scope.hasAccessToLevel = function (level) {
-        return userService.currentUser != undefined && userService.currentUser.currentLevel >= level;
-    }
-
     $scope.startChoosenTest = function (level) {
         currentLevel = level;
         $scope.startTest();
     };
 
     $scope.startTest = function () {
-        $location.url("/test/" + currentLevel);
+        $location.url('/test/' + currentLevel);
     };
+
+    $scope.keyPressed = function (key) {
+        $rootScope.$broadcast('page.keyPressed', key);
+    };
+}])
+
+.controller('resultController', ['$scope', '$location', 'userService', function ($scope, $location, userService) {
+    if (userService.currentUser == undefined) {
+        $location.url('/start');
+    }
+
+    var currentLevel = userService.currentUser.currentLevel;
+    
+    $scope.testResult = userService.testResult;
 
     $scope.isLastTest = function () {
         return currentLevel < $scope.allTests.length;
     };
-
-    $scope.isCurrentUserLoaded = function () {
-        return userService.currentUser != undefined;
-    }
 }])
 
 .controller('testController', ['$scope', '$location', '$routeParams', 'userService', function ($scope, $location, $routeParams, userService) {
     var tests = getTests();
 
-    $scope.allTests = angular.copy(tests);
-
     var onFinishFunction = function (result) {
-        $location.url("/result");
+        $location.url('/result');
         trainner.clear();
 
         userService.testResult = result;
@@ -344,46 +365,8 @@
     }
 }])
 
-.controller('mainController',   ['$scope', '$location', 'userService', 'dataService', function ($scope, $location, userService, dataService) {
-    var currentLevel = 0;
+.controller('mainController', [function () {
 
-    var tests = getTests();
-
-    $scope.allTests = angular.copy(tests);
-
-    userService.loginStatus().then(function (res) {
-        updateLoginStatus(res);
-    });
-
-    $scope.login = function () {
-        userService.login().then(function (res) {
-            updateLoginStatus(res);
-        });
-    };
-
-    function updateLoginStatus(res) {
-        if (userService.currentUser == undefined) {
-            $location.url("/login");
-        }
-        else {
-            $location.url("/start");
-            currentLevel = userService.currentUser.currentLevel;
-            $scope.name = userService.currentUser.name;
-        }
-    };
-
-    $scope.hasAccessToLevel = function (level) {
-        return userService.currentUser != undefined && userService.currentUser.currentLevel >= level;
-    };
-
-    $scope.startChoosenTest = function (level) {
-        currentLevel = level;
-        $scope.startTest();
-    };
-
-    $scope.startTest = function () {
-        $location.url("/test/" + currentLevel);
-    };
 }])
 
 .directive('trainerSelector', function () {
