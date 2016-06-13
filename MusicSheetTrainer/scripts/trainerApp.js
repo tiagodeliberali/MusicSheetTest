@@ -20,7 +20,7 @@
     $routeProvider
 
     .when('/', {
-        templateUrl: 'pages/login.html',
+        templateUrl: 'pages/start.html',
         controller: 'mainController'
     })
 
@@ -207,16 +207,6 @@
         });
     };
 
-    function loginAction() {
-        if (userService.currentUser == undefined) {
-            $location.url('/login');
-        }
-        else {
-            currentLevel = userService.currentUser.currentLevel;
-            $scope.name = userService.currentUser.name;
-        }
-    }
-
     $scope.logout = function () {
         userService.logout().then(function (res) {
             $location.url('/login');
@@ -251,20 +241,21 @@
     $scope.keyPressed = function (key) {
         $rootScope.$broadcast('page.keyPressed', key);
     };
+
+    function loginAction() {
+        if (userService.currentUser == undefined) {
+            $location.url('/login');
+        }
+        else {
+            currentLevel = userService.currentUser.currentLevel;
+            $scope.name = userService.currentUser.name;
+            $location.url('/start');
+        }
+    }
 }])
 
 .controller('resultController', ['$scope', '$location', 'userService', function ($scope, $location, userService) {
-    if (userService.currentUser == undefined) {
-        $location.url('/start');
-    }
-
-    var currentLevel = userService.currentUser.currentLevel;
-    
     $scope.testResult = userService.testResult;
-
-    $scope.isLastTest = function () {
-        return currentLevel < $scope.allTests.length;
-    };
 }])
 
 .controller('testController', ['$scope', '$location', '$routeParams', 'userService', function ($scope, $location, $routeParams, userService) {
@@ -286,7 +277,7 @@
         }
     };
 
-    onNoteIsKilledFunction = function () {
+    var onNoteIsKilledFunction = function () {
         $scope.$apply(function () {
             trainner.checkNote(-1);
         });

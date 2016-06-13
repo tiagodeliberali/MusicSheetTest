@@ -29,6 +29,6 @@
             </div>
         </div>
     </form>
-    <button class="btn btn-primary" ng-click="startTest()" ng-show="!isLastTest() || !testResult.passed">{{ (testResult.passed ? "Próximo desafio" : "Tentar novamente") }}</button>
+    <button class="btn btn-primary" ng-click="startTest()" ng-show="!testResult.passed">{{ (testResult.passed ? "Próximo desafio" : "Tentar novamente") }}</button>
 </div>
 <trainer-selector />

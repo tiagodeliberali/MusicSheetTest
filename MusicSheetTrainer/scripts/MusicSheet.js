@@ -330,11 +330,13 @@
 
             setNoteAsCorrect: function (element) {
                 element.stroke = sheetOptions.noteStrokeCorrect;
+                element.fadeOut("long", "ease-in-out-cubic");
                 this.canvas.redraw();
             },
 
             setNoteAsWrong: function (element) {
                 element.stroke = sheetOptions.noteStrokeWrong;
+                element.fadeOut("long", "ease-in-out-cubic");
                 this.canvas.redraw();
             },
 
